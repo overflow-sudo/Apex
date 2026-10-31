@@ -10,13 +10,14 @@ import glob, os, re, threading, time, traceback
 import config
 from core import autotheme, procs
 from core.system import log
-from core.registry import tab, action, status, extra, on_start
+from core.registry import tab, action, status, extra, focus, section, on_start
 
 _lock = threading.Lock()
 _auto = None            # algılanan tema (dict) ya da None
 _override = None        # Tema sekmesinden seçilen: None = otomatik, "" = siyah-beyaz, "<id>" = oyun
 _last_seen = (None, 0.0)   # son algılanan oyun ve zamanı: kısa kesintilerde tema hemen gitmesin
 HOLD = 15
+_fx = bool(getattr(config, "THEME_FX", False))   # oyunun hareketli arka plan efekti (Tema sekmesinden açılır)
 
 # Oyun başlatıcılarının kurulum klasörleri: ...\<başlatıcı>\<Oyun Adı>\...
 _LAUNCHER_DIRS = re.compile(
@@ -163,7 +164,7 @@ def current():
             t = None
         else:
             t = _theme(_override) if _override in config.GAME_THEMES else None
-    if t and not config.THEME_FX:
+    if t and not _fx:
         t = dict(t, fx="")
     return t
 
@@ -183,7 +184,18 @@ def playing_chip():
     with _lock:
         t = _auto
     # İngilizce ad Türkçe büyük harfe çevrilmesin (TEAMFİGHT olmasın) diye lang="en" ile ayrı parça
-    return {"text": "Oynuyor", "value": t.get("short") or t["name"], "lang": "en"} if t else None
+    # kind: odak adası bu oyunu zaten gösteriyorsa arayüz bu etiketi gizler
+    return {"text": "Oynuyor", "value": t.get("short") or t["name"], "lang": "en", "kind": "game"} if t else None
+
+
+@focus(priority=70)
+def playing_focus():
+    with _lock:
+        t = _auto
+    if not t:
+        return None
+    return {"kind": "game", "title": t.get("short") or t["name"], "sub": "Oynuyor", "lang": "en", "icon": "gamepad",
+            "img": logo_url(t.get("logo")), "img_white": t.get("logo_white", False), "live": True}
 
 
 @tab("theme", "Tema", icon="palette", order=60)
@@ -195,7 +207,7 @@ def view():
     items = [
         {"title": "Otomatik", "sub": auto_sub, "icon": "bolt", "active": ov is None,
          "action": "theme.set", "params": {"id": None}},
-        {"title": "Siyah-beyaz", "sub": "Varsayılan", "icon": "monitor", "active": ov == "",
+        {"title": "Sade", "sub": "Renk değişmez", "icon": "monitor", "active": ov == "",
          "action": "theme.set", "params": {"id": ""}},
     ]
     for id_, t in config.GAME_THEMES.items():
@@ -204,9 +216,21 @@ def view():
         items.append({"title": t.get("short") or t["name"], "sub": t["name"], "lang": "en", "icon": "gamepad",
                       "img": logo_url(t.get("logo")), "img_white": t.get("logo_white", False),
                       "active": ov == id_, "action": "theme.set", "params": {"id": id_}})
-    # İngilizce ad Python'da büyük harfe çevriliyor; CSS'in Türkçe büyük harfi I'yı İ yapmasın
-    title = "Tema · " + ((cur or {}).get("name", "").upper() or "Siyah-beyaz") + ("" if ov is None else " · önizleme")
+    name = (cur or {}).get("short") or (cur or {}).get("name") or "Sade"
+    title = "Şu an · " + name + ("" if ov is None else " (önizleme)")
     return [{"type": "tiles", "title": title, "fill": True, "items": items}]
+
+
+@section("theme", order=5)
+def fx_section():
+    return {"type": "buttons", "items": [
+        {"title": "Oyun efekti", "icon": "layers", "on": _fx, "action": "theme.fx"}]}
+
+
+@action("theme.fx")
+def toggle_fx():
+    global _fx
+    _fx = not _fx
 
 
 @action("theme.set")

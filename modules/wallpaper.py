@@ -65,9 +65,8 @@ def wallpaper_file(q=None):
 
 @section("theme", order=10)
 def wp_section():
-    return {"type": "buttons", "title": "Arka plan · oyun yokken", "items": [
-        {"title": "Masaüstü duvar kağıdı · " + ("Açık" if _enabled else "Kapalı"), "icon": "monitor",
-         "action": "wallpaper.toggle"},
+    return {"type": "buttons", "items": [
+        {"title": "Duvar kağıdı", "icon": "monitor", "on": _enabled, "action": "wallpaper.toggle"},
     ]}
 
 

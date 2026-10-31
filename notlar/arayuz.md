@@ -59,3 +59,57 @@
 - Chrome'da sayfayı aç → menüden "Ana ekrana ekle". `manifest.json` sayesinde tam ekran ve yatay açılır.
 - Sağ üstteki ⛶ düğmesi tam ekrana geçirir.
 - Ekranın kapanmaması için: Geliştirici seçenekleri → "Uyanık kal (şarj olurken)".
+
+## Odak arayüzü (`@focus`, `renderFocus()` app.js) — 2026-10-31
+- Felsefe: ekran her şeyi aynı anda göstermez, o an aktif olana odaklanır. Python tarafı `@focus(priority)` ile
+  öğe verir (`core/registry.py`, `/api/ui` → `focus` listesi, hafif yenilemelerde de var, önceliğe göre sıralı).
+  Şu an: kritik pil 90 (`battery.py`, dokununca Sistem), oyun 70 (`games.py`, logo), çalan şarkı 50 / duraklatılmış 15
+  (`media.py`, dokununca medya paneli, adada oynat/duraklat).
+- Üst çubukta `#focus` (.island): en öndeki öğe büyük, diğerleri sağında küçük rozet (ayrı ayrı dokunulabilir).
+  Öğe değişince içerik kayarak girer (`.swap`), ada max-width geçişiyle açılıp kapanır.
+- Öncelik >= 30 → `body.focus`: "PC//KUMANDA" yazısı çekilir, sadece ilk durum etiketi (mod) kalır. Duraklatılmış
+  şarkı (15) odak sayılmaz, ada küçük kalır. `@status` dict'i `kind` verirse ve o kind adadaysa etiket çizilmez
+  (Oynuyor etiketi, ilk etiketin vurgu rengini kapmasın diye filtre JS'te, gizleme değil).
+- Eski `#media` ve `#batt` kutuları kaldırıldı. `@extra("battery")` ve `@extra("media")` duruyor (panel ve eklentiler için).
+- Gruplar: aktif öğesi olan tiles/list `.has-on` alır, diğer öğeler %55 opaklık (dokununca/hover'da netleşir).
+  Yeni aktif olan öğe `.lit` ile yumuşakça dolar (önceki çizimle `sekme|başlık` karşılaştırması, `onCls()`).
+- Geçişler: sekme değişiminde eski içerik soluklaşır (`.main.leaving`, "YÜKLENİYOR" yanıp sönmesi yok), yenisi
+  `.main.enter` ile kayarak gelir. Medya/maç/güç panelleri display yerine opacity+visibility ile solar.
+  Hepsi `prefers-reduced-motion`'da kapanır. Sadece opacity/transform animasyonu (eski telefon).
+- Ambient: `IDLE_MS` (90 sn) dokunulmazsa ve en öndeki odak çalan şarkıysa medya paneli kendiliğinden açılır
+  (`.mpanel.ambient`). Oyun ya da kritik pil öne geçerse ya da şarkı durursa kendiliğinden kapanır.
+- Test: `focus_test.py` benzeri betik — `procs.IS_WIN=False`, `media.current`/`games._auto`/`battery.latest` sahte,
+  127.0.0.1'de ayrı portta sunucu; 780×360'ta tarayıcı panosunda doğrulandı.
+
+## Sade tema (Tesla tarzı) — 2026-10-31, 1. adım
+- Emir'in isteği: Tesla ekranları kadar sade, ama hiçbir işlev kaybolmadan. Ekranda tek bir ana şey, gerisi ikon ve boşluk.
+- `style.css` baştan yazıldı. Değişkenler: `--bg #0b0b0c`, `--panel #18181a` (kart), `--panel2 #232326` (basılı/seçili satır),
+  `--dim`, `--mute`, `--warn #ff6b5e` (kritik pil, sıcak gösterge, Kapat), `--r` köşe. Eklentiler `--line-hi`, `--mono`, `--dim`
+  kullandığı için bu adlar duruyor. Oyun efektleri (`.fx-*`) ve kapalı ekranındaki gözler aynen korundu.
+- Ray sadece ikon (sekme adı `title`'da), seçili ikon yuvarlak zeminli ve vurgu renginde. Üst çubukta marka yok, saat solda,
+  durum etiketleri kutusuz düz metin (· ile ayrılır). Kart numaraları ve "● AKTİF" etiketi gizli. Göstergeler ince düz çubuk.
+- Oyun teması: `applyTheme` sadece `--ac/--ac2/--on-ac` ayarlar, oyunun `bg/fg`'si kullanılmaz. Filigran logo (`#wm`) gizli.
+- `config.THEME_FX = False`, `config.WALLPAPER = False` (ikisi de açılabilir; duvar kağıdı Tema sekmesinden).
+- Arayüz yazıları cümle düzeninde ("Uygulanıyor…", "Bilgisayar kapalı ya da uykuda"). Yeni metni BÜYÜK yazma.
+- Sistem kartları 780×360'ta sığsın diye sayı 28 px, dolgu 9 px (2 sıra + pil satırı).
+
+## Sade tema 2. adım — Modlar ana ekranı (2026-10-31)
+- `modules/modes.py` view: `{"type": "hero", "mode": "<mod> modu"}` + mod tiles'ı `layout: "stack", side: true` + "Modları ayarla".
+- `hero` widget'ı (app.js `drawHero`): `focusList[0]`'ı büyük gösterir. Medya: kapak, ad, ilerleme çubuğu (`tickMedia`),
+  önceki/oynat/sonraki; kapağa dokununca medya paneli. Oyun: logo + ad + "Oynuyor" (vurgu renginde). Kritik pil: kırmızı ikon
+  + ad, dokununca Sistem. Boşta: büyük saat (`tick()` günceller), Türkçe tarih, mod adı. Diğer odak öğeleri sağ üstte rozet.
+  Odak değişince sayfa yeniden çizilmeden `refreshHero()` ile güncellenir (anahtar değişmezse dokunmaz, titreme yok).
+- `side: true`: renderMain bölümü bir öncekiyle `.duo` (1.3fr / 1fr) içine alır; dikeyde alt alta.
+- Ana kart ekrandayken (`body.has-hero`) üst çubuktaki odak adası gizlenir, aynı şey iki kez görünmesin.
+- Mod kartındaki EKRAN/ÇIKIŞ/GİRİŞ satırları (`lines`) stack düzeninde gizli; ayrıntı "Modları ayarla" sihirbazında.
+
+## Sade tema 3. adım — diğer sekmeler (2026-10-31)
+- `buttons` öğesine `"on": true/false` verilirse aç/kapa anahtarı çizilir (`.btn.tg`, `.sw`); yazıya "· Açık" ekleme.
+  Tema sekmesinde tek satır: Oyun efekti (`theme.fx`, `games._fx`, başlangıç `config.THEME_FX`), Duvar kağıdı, Klavye ışığı.
+  Ayarlar sunucu yeniden başlayınca config değerine döner. `.brow` düğmeleri alttan hizalı (başlıklı/başlıksız karışık olabilir).
+- Tema: başlık "Şu an · <oyun>" (`.upper()` yok), "Siyah-beyaz" seçeneğinin adı artık "Sade".
+- Birden çok kart aktifse (`hasOn` → `multi`, örn. iki ekran açık) seçim değil durumdur: kart dolmaz, ikon vurgu renginde.
+- Sistem kartı: etiket solda, ayrıntı (CPU adı, sıcaklık) aynı satırda sağda, altta 32 px sayı + çubuk. 780×360'ta 2 sıra + pil satırı sığıyor.
+- Ekran alt yazısı "ana ekran" / "kapalı", sıcaklık kartları "CPU sıcaklığı" / "GPU sıcaklığı", başlık "Açık kalma süresi".
+- Görsel kontrol: tarayıcı panosu daralırsa 780×360 küçülerek gösterilir ve emülasyon sıfırlanır; ölçüm için
+  `scrollHeight - clientHeight` ile taşma kontrolü yap, ekran görüntüsünü pano genişken al.

@@ -1,6 +1,6 @@
 """
-Sistem sekmesinin altında fare / klavye / kulaklık pil kartları. Kritik pil (config.BATTERY_LOW) üst çubukta
-yanıp sönen ikonla gösterilir (@extra("battery")). Kapalı/uykudaki cihazda son bilinen değer saatiyle gösterilir.
+Sistem sekmesinin altında fare / klavye / kulaklık pil kartları. Kritik pil (config.BATTERY_LOW) üst çubuktaki
+odak adasında en öne geçer (@focus, liste @extra("battery")'de de var). Kapalı/uykudaki cihazda son bilinen değer saatiyle gösterilir.
 - Fare: Attack Shark, Xenta alıcısı 1D57:FA60. MI_02 COL03 (usage page 0x0A, 5 baytlık giriş raporu): alıcı kendiliğinden
   ~2-4 sn'de bir 03 xx 40 <durum> <seviye> gönderir (xx=0x10 modelinde seviye 0-10, diğerlerinde yüzde; SHARK_SCALE); durum 01 pil, 02 harici güç, 03 şarj oluyor. Bağlanınca bir kez
   sahte %100 geldiği için aynı değer iki kez üst üste gelince kabul edilir (daeoxide/attackshark-battery-windows).
@@ -15,7 +15,7 @@ import threading, time, traceback
 import config
 from core import ghub
 from core.procs import IS_WIN
-from core.registry import extra, on_start, section
+from core.registry import extra, focus, on_start, section
 from core.system import log
 
 HYPERX = (0x03F0, 0x02CC, 0x01C0)
@@ -146,6 +146,19 @@ def critical():
         if d.get("pct") is not None and d["pct"] <= LOW and not d.get("charging"):
             out.append({"label": label, "pct": d["pct"]})
     return sorted(out, key=lambda x: x["pct"]) or None
+
+
+@focus(priority=90)
+def critical_focus():
+    """Kritik pil her şeyin önüne geçer. Dokununca Sistem sekmesi (pil kartları)."""
+    low = critical()
+    if not low:
+        return None
+    first = low[0]
+    others = " · ".join("%s %%%d" % (x["label"], x["pct"]) for x in low[1:])
+    return {"kind": "battery", "title": "%s pili %%%d" % (first["label"], first["pct"]),
+            "sub": others or "Şarja tak", "icon": "battery", "badge": "%%%d" % first["pct"], "alert": True,
+            "tab": "system"}
 
 
 def _hours(h):

@@ -7,7 +7,7 @@ Sağ üstteki medya kutusu @extra("media") ile gelir.
 """
 import ctypes, json, os, subprocess, threading, time
 from core.system import BASE, log
-from core.registry import action, extra, on_start, on_stop, route
+from core.registry import action, extra, focus, on_start, on_stop, route
 from core.procs import IS_WIN
 
 SCRIPT = os.path.join(BASE, "core", "media.ps1")
@@ -104,6 +104,17 @@ def current():
 @extra("media")
 def media_payload():
     return current()
+
+
+@focus(priority=50)
+def media_focus():
+    """Çalan şarkı odak sayılır; duraklatılmış oturum (Spotify açık bırakılmış vb.) sessizce küçük kalır."""
+    m = current()
+    if not m:
+        return None
+    return {"kind": "media", "title": m["title"], "sub": " · ".join(x for x in (m["artist"], m["app"]) if x),
+            "icon": "music", "img": m["cover"], "live": m["playing"], "priority": 50 if m["playing"] else 15,
+            "panel": "media", "controls": "media"}
 
 
 @route("/media/cover")

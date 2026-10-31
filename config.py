@@ -54,7 +54,7 @@ PROFILES = {
 #   fx     : arka plan efekti — radar | hex | tactical | glitch | snow | dust | road | "" (yok)
 #   logo   : "steam:<appid>" ya da resim adresi; logo_white: True = koyu logoyu beyaza çevir
 #            (telefon logoyu doğrudan internetten yükler; listede olmayan Steam oyunlarının logosu otomatik bulunur)
-THEME_FX = True          # False = sadece renkler değişsin, hareketli arka plan olmasın
+THEME_FX = False         # True = oyunun hareketli arka plan efekti de gelsin (sade tema: kapalı, sadece vurgu rengi değişir)
 
 # Klavye ışığı (Logitech G HUB / LIGHTSYNC): oyun açıkken tüm klavye "accent", "keys" tuşları "key_color"
 # (yoksa accent2, o da yoksa beyaz). Oyun kapanınca G HUB'daki kendi profilin geri gelir.
@@ -115,8 +115,9 @@ FOOTBALL = {
 }
 
 # ---------------- ARKA PLAN ----------------
-# Oyun teması yokken kumandanın arka planı bilgisayarın masaüstü duvar kağıdı olsun
-WALLPAPER = True
+# True = oyun teması yokken kumandanın arka planı bilgisayarın masaüstü duvar kağıdı olsun
+# (sade tema: kapalı, düz koyu zemin; Tema sekmesinden açılabilir)
+WALLPAPER = False
 WALLPAPER_DIM = 0.55     # duvar kağıdının üstündeki karartma (0 = hiç, 1 = simsiyah); yazılar okunsun diye
 
 # ---------------- MINECRAFT ----------------

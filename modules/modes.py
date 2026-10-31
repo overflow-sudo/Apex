@@ -48,8 +48,13 @@ def view():
     if wizard.needs_setup():
         return wizard.intro()
     cur = current()
-    return [{
+    profiles = local.profiles()
+    # solda ana kart (o an çalan şarkı / oyun / kritik pil, yoksa saat), sağda tek sütun mod düğmeleri
+    return [{"type": "hero", "fill": True,
+             "mode": (profiles[cur]["title"] + " modu") if cur in profiles else "Özel ayar"}, {
         "type": "tiles",
+        "layout": "stack",
+        "side": True,
         "fill": True,
         "items": [{
             "title": p["title"],
@@ -59,7 +64,7 @@ def view():
             "active": cur == key,
             "action": "mode.apply",
             "params": {"name": key},
-        } for key, p in local.profiles().items()],
+        } for key, p in profiles.items()],
     }, {"type": "buttons", "items": [{"title": "Modları ayarla", "icon": "tune", "action": "wizard.start"}]}]
 
 

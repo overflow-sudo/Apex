@@ -7,6 +7,7 @@ ve aşağıdaki dekoratörlerle kendini kaydeder:
     @status(order=10)                                 -> def fn(): return "KISA METİN" veya None
     @section("sekme_id", order=50)                    -> def fn(): başka bir sekmeye bölüm ekle
     @extra("anahtar")                                 -> def fn(): /api/ui cevabına ek alan (örn. tema)
+    @focus(priority=50)                               -> def fn(): üst çubuktaki odak adasına öğe (dict) ya da None
     @route("/yol")                                    -> def fn(q): (content_type, bytes) döndüren GET adresi
     @stream("/yol")                                   -> def fn(q, send): SSE ile anlık veri
     @post("/yol")                                     -> def fn(body): dict döndüren yerel POST adresi (sadece 127.0.0.1)
@@ -24,6 +25,7 @@ from core.system import BASE, invalidate
 
 TABS, ACTIONS, STATUSES, STARTERS, EXTRAS, SECTIONS, ROUTES, POSTS, STREAMS = [], {}, [], [], {}, {}, {}, {}, {}
 STOPPERS = []
+FOCUS = []       # [(öncelik, fn)] — odak adası (üst çubuk), en yüksek öncelikli öğe büyük gösterilir
 PLUGINS = []     # yüklenen eklentiler: [{"id", "dir"}]
 PLUGIN_DIR = os.path.join(BASE, "eklentiler")
 
@@ -99,12 +101,43 @@ def extra(key):
     return deco
 
 
+def focus(priority=50):
+    """O an önemli olan bir durumu (oyun, çalan şarkı, kritik pil...) üst çubuktaki odak adasına koyar.
+    fn() None ya da şu dict'i döndürür (sadece "kind" ve "title" zorunlu):
+      {"kind": "media", "title", "sub", "icon", "img", "img_white", "lang",
+       "badge": "kısa metin (ikincil öğe olarak gösterilirken)", "priority": int (dekoratördekini ezer),
+       "live": bool (canlı animasyon), "alert": bool (dikkat), "tab": "sekme_id" ya da "panel": "media",
+       "controls": "media" (adada oynat/duraklat düğmesi)}
+    Öncelik 30 ve üstü "odak" sayılır: marka yazısı ve ikincil durum etiketleri sadeleşir.
+    Hızlı olmalı (her yenilemede çağrılır): sadece bellekteki son değeri oku, araç çalıştırma."""
+    def deco(fn):
+        FOCUS.append((priority, fn))
+        return fn
+    return deco
+
+
+def _focus():
+    out = []
+    for pr, fn in FOCUS:
+        try:
+            r = fn()
+        except Exception:
+            traceback.print_exc()
+            continue
+        if r:
+            r = dict(r)
+            r.setdefault("priority", pr)
+            out.append(r)
+    return sorted(out, key=lambda x: -x["priority"])
+
+
 def _extras(data):
     for k, fn in EXTRAS.items():
         try:
             data[k] = fn()
         except Exception:
             traceback.print_exc()
+    data["focus"] = _focus()
     return data
 
 

@@ -3,6 +3,16 @@
 (CLAUDE.md'den taşındı, 2026-10-31. Genel kurallar CLAUDE.md'de.)
 
 ## Değişiklik geçmişi
+- 2026-10-31: Sade tema 3. adım: Ekran/Ses/Sistem/Tema aynı dilde. Aç/kapa düğmeleri anahtar oldu (`"on"`), Tema'da
+  oyun efekti anahtarı (`theme.fx`), çoklu aktif kartlar sakin (`multi`), sistem kartında ayrıntı etiket satırında, büyük harfli metinler kalktı.
+- 2026-10-31: Sade tema 2. adım: Modlar = solda ana kart (`hero`: çalan şarkı / oyun / kritik pil, yoksa saat + tarih),
+  sağda tek sütun mod düğmeleri (`layout: "stack"`, `side: true`). Mod kartlarındaki EKRAN/ÇIKIŞ/GİRİŞ satırları gizli.
+- 2026-10-31: Sade tema 1. adım (Tesla tarzı): genel stil baştan yazıldı (koyu zemin, yuvarlak kenarlıksız kartlar, normal yazı,
+  sadece ikonlu ray, saat solda). Oyun sadece vurgu rengini değiştiriyor; `THEME_FX` ve `WALLPAPER` varsayılan kapalı.
+  Sıradaki: 2. Modlar ana kartı + mod düğmeleri, 3. diğer sekmeler (Tema'ya efekt aç/kapa).
+- 2026-10-31: Odak arayüzü: `@focus` kancası + üst çubukta odak adası (kritik pil > oyun > çalan şarkı), odakta marka ve
+  ikincil etiketler çekiliyor, aktif olmayan kart/satırlar soluk, yumuşak sekme/panel geçişleri, 90 sn dokunulmazsa "şu an çalıyor" ekranı.
+  Ayrı medya ve pil kutuları kaldırıldı (adaya taşındı). Üst çubukta flex `gap` margin'e çevrildi.
 - 2026-10-31: Eklenti sistemi (`eklentiler/`, `window.PCK`, `core/plugin.py`). Minecraft haritası ilk eklenti oldu; önce/sonra
   ekran görüntüleri birebir aynı. Kur.bat artık kaldırılan modül/eklenti dosyalarını çalışan kopyadan siliyor.
 - 2026-10-31: Taşınabilirlik: bu PC'ye özel ayarlar `yerel/bu_pc.json`'a taşındı (monitor_adlari.json dahil), Modlar sekmesinde

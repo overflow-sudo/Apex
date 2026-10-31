@@ -57,7 +57,7 @@ eklentiler/<ad>/              <ad>: sadece küçük harf, rakam, _ (Python modü
 Sadece **Python standart kütüphanesi**. Python **3.8** ile uyumlu kal (`match`, `X | Y` tip birleşimi, `str.removeprefix` yok).
 
 ```python
-from core.registry import tab, section, action, status, extra, route, stream, post, on_start, on_stop
+from core.registry import tab, section, action, status, extra, focus, route, stream, post, on_start, on_stop
 from core.plugin import settings, data_dir
 from core.system import log, run, cached, match, BASE
 ```
@@ -69,6 +69,7 @@ from core.system import log, run, cached, match, BASE
 | `@action("ad.eylem")` | `def fn(**params)` | Düğme eylemi. Parametreler anahtar kelime olarak gelir. Dönüş değeri telefona `{ok:true, result}` olarak gider, hata `{ok:false, error}` olur. `state.lock` altında çalışır, sonra önbellek temizlenir. |
 | `@status(order=50)` | `def fn(): return "Kısa · Metin"` ya da `None` | Üst çubuk etiketi. İngilizce değer için `{"text": "Oynuyor", "value": "Skyrim", "lang": "en"}`. |
 | `@extra("anahtar")` | `def fn(): return json_değer` | `/api/ui` cevabına (hafif yenilemeler dahil) ek alan. JS'te `PCK.on("data", ...)` ile okunur. |
+| `@focus(priority=50)` | `def fn(): return {"kind", "title", ...}` ya da `None` | Üst çubuktaki **odak adası**: o an önemli olan durum (oyun 70, çalan şarkı 50, kritik pil 90). En yüksek öncelikli öğe büyük, diğerleri rozet olur; >= 30 ise arayüz o duruma odaklanır. Alanlar: `sub, icon, img, img_white, lang, badge, priority, live, alert, tab` (dokununca o sekme) ya da `panel: "media"`. Hızlı olmalı. Aynı `kind`'lı `@status` etiketi `{"kind": ...}` verirse adada gösterilirken gizlenir. |
 | `@route("/yol")` | `def fn(q): return (content_type, bytes)` ya da `None` (404) | Ek GET adresi. `q` = sorgu parametreleri `{ad: değer}`. **PIN istemez**, sadece resim/zararsız veri sun. |
 | `@stream("/yol")` | `def fn(q, send)` | Server-Sent Events. Bloklar, `send("json metni")` ile olay yollar. Telefon kapatınca `send` hata fırlatır ve fonksiyon biter. 15 sn'de bir canlı tutma gönder. PIN istemez. |
 | `@post("/yol")` | `def fn(body): return dict` | Yerel POST (sadece 127.0.0.1, PIN yok). PC'deki başka programlar için, örn. Minecraft modu. |

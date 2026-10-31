@@ -18,9 +18,11 @@ Emir'in Windows masaüstü bilgisayarını, masada yatay duran eski bir Android 
   alanları gibi yeni şeyler kullanma. CSS'te flex `gap` yerine margin ya da grid-gap kullan.
 - Arayüz metinleri Türkçe. Büyük harfe çevirmeyi CSS `text-transform` ile yap (`<html lang="tr">`
   sayesinde İ/I doğru çıkar). Python'da `.upper()` kullanma, "MÜZIK" gibi yanlış sonuç verir.
-- Varsayılan tema siyah-beyaz "oyuncu" teması: saf siyah zemin, beyaz çizgiler, köşe braketleri, ince
-  tarama çizgileri. Aktif öğe ters çevrilir. Oyun açıkken renkler o oyunun temasına geçer (`notlar/tema.md`).
-  CSS'te sabit renk yazma: `--ac` (vurgu), `--on-ac`, `--ac2`, `--bg`, `--fg`, `--panel`, `--line` kullan.
+- Varsayılan tema sade koyu tema (Tesla ekranı gibi, 2026-10-31): düz koyu zemin (`#0b0b0c`), kenarlıksız yuvarlak
+  kartlar, normal yazı (büyük harf ve mono yok), ray sadece ikon, bol boşluk. Köşe braketi, tarama çizgisi, kart numarası
+  ekleme. Aktif öğe vurgu rengiyle dolar. Oyun açıkken sadece vurgu rengi değişir, zemin koyu kalır; hareketli efektler
+  (`THEME_FX`) ve duvar kağıdı (`WALLPAPER`) varsayılan kapalı (`notlar/tema.md`, `notlar/arayuz.md`).
+  CSS'te sabit renk yazma: `--ac` (vurgu), `--on-ac`, `--ac2`, `--bg`, `--fg`, `--panel`, `--panel2`, `--line`, `--warn`, `--r` kullan.
 - İngilizce metinler (oyun adları) CSS ile büyük harfe çevriliyorsa `lang="en"` ver (item `"lang": "en"`,
   status `{"text","value","lang"}`) ya da Python'da `.upper()` yap. Yoksa Türkçe kural "SKYRİM" üretir.
 
@@ -91,10 +93,12 @@ oyun paneli…) olan ya da ayrı bir oturumda geliştirilecek özellik → `ekle
 { "type": "tiles",   "title": "?", "fill": true,   // büyük kartlar, fill = kalan yüksekliği doldur
   "items": [{ "title", "sub", "icon", "active", "lines": [["ANAHTAR","değer"]], "action", "params" }] }
 { "type": "list",    "title": "?", "items": [{ "title", "sub", "icon", "active", "action", "params" }] }
-{ "type": "buttons", "title": "?", "items": [{ "title", "icon", "action", "params" }] }
+{ "type": "buttons", "title": "?", "items": [{ "title", "icon", "action", "params", "on": true|false }] }  // "on" = aç/kapa anahtarı
 { "type": "stats",   "title": "?", "fill": true,   // gösterge kartı: büyük sayı + segmentli çubuk; "compact": true = tek satır küçük kartlar
   "items": [{ "label", "value", "unit", "pct": 0-100|null, "hot": bool, "sub" }] }
 { "type": "text",    "title": "?", "text": "..." }
+{ "type": "hero",    "fill": true, "mode": "Masaüstü modu" }  // ana kart: focus listesinin başı büyük, boşta saat + tarih
+// tiles + "layout": "stack" = tek sütun geniş düğmeler; herhangi bir section + "side": true = öncekinin sağına yerleşir
 ```
 Art arda gelen `list` section'ları yan yana sütunlara yerleşir. 4'ten fazla kart olursa küçük kart
 düzenine geçilir. Mevcut ikonlar: bolt, gamepad, desktop, music, monitor, volume, headphones,
@@ -117,6 +121,7 @@ Kart öğesine `"img": url` (ve `"img_white": true`) verilirse ikon yerine resim
 - Kur.bat kaynaktan kaldırılan eklenti klasörlerini ve `modules/*.py` dosyalarını çalışan kopyadan siler (iki kez yüklenmesin diye).
 - **Minecraft haritası** (`eklentiler/minecraft/`): ayrıntılar `eklentiler/minecraft/NOTLAR.md`. Kısaca: Fabric köprü modu
   konumu 10 Hz gönderir, cubiomes DLL karoları çizer, Harita sekmesi sadece oyun açıkken görünür.
+- Odak adası: `@focus(priority)` fn() → `{kind, title, sub, img, badge, live, alert, tab|panel}` ya da None (`notlar/arayuz.md`).
 - Yeni kancalar: `@stream(path)` fn(q, send) (SSE, `send(text)`), `@post(path)` (sadece 127.0.0.1, PIN yok), `@route(path)` artık `fn(q)` alır,
   `@tab(..., visible=fn)`, `games.detector`.
 

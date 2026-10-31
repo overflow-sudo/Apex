@@ -13,8 +13,8 @@ def view():
             "fill": True,
             "items": [{
                 "title": m["label"],
-                "sub": "%s · %s Hz%s%s" % (m["res"], m["hz"], " · ANA" if m["primary"] else "",
-                                          "" if m["active"] else " · KAPALI"),
+                "sub": "%s · %s Hz%s%s" % (m["res"], m["hz"], " · ana ekran" if m["primary"] else "",
+                                          "" if m["active"] else " · kapalı"),
                 "icon": "monitor",
                 "active": m["active"],
                 "action": "screen.only",

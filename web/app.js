@@ -146,7 +146,7 @@
       if ("score" in data) renderScore(data.score);
       if ("media" in data) renderMedia(data.media);
       if ("wallpaper" in data) renderWallpaper(data.wallpaper);
-      if ("battery" in data) renderBattery(data.battery);
+      if ("focus" in data) renderFocus(data.focus);
       fire("data", data);                // eklentiler: /api/ui cevabı (kendi @extra alanları dahil)
       if (data.light) {
         if (!ui) return;
@@ -167,7 +167,7 @@
       fails++;
       if (fails < 3) return;
       attempts++;
-      if (!offline) { offline = true; setOffline(true); applyTheme(null); renderScore(null); renderMedia(null); renderBattery(null); closeMedia(); }
+      if (!offline) { offline = true; setOffline(true); applyTheme(null); renderScore(null); renderMedia(null); renderFocus(null); closeMedia(); }
       offSub();
       renderChips();
     });
@@ -191,11 +191,11 @@
     busy = true;
     node.classList.add("busy");
     document.body.classList.add("working");
-    toast("UYGULANIYOR…", 0);
+    toast("Uygulanıyor…", 0);
     api("/api/action", { name: item.action, params: item.params || {} }).then(function (res) {
-      toast(res.ok ? "TAMAM" : "HATA · " + (res.error || "?"), 2200);
+      toast(res.ok ? "Tamam" : "Hata · " + (res.error || "?"), 2200);
     }).catch(function () {
-      toast("BAĞLANTI HATASI", 2500);
+      toast("Bağlantı hatası", 2500);
     }).then(function () {
       busy = false;
       document.body.classList.remove("working");
@@ -210,16 +210,21 @@
     if (!tabs.some(function (t) { return t.id === currentTab; })) currentTab = tabs.length ? tabs[0].id : "";
     renderRail(tabs);
     renderChips();
-    var t = tabObj();
+    var t = tabObj(), main = $("main");
     if (t && t.sections) renderMain(t.sections);
-    else $("main").innerHTML = '<div class="boot">YÜKLENİYOR<i class="cursor"></i></div>';
+    // sekme değişirken eski içerik silinip "YÜKLENİYOR" yanıp sönmesin: yeni içerik gelene kadar soluklaşır
+    else if (main.firstChild && !main.querySelector(".boot")) main.classList.add("leaving");
+    else main.innerHTML = '<div class="boot">Yükleniyor…</div>';
   }
+
+  var enterNext = true;     // sonraki çizim yumuşakça girsin (ilk açılış, sekme değişimi)
 
   function goTab(id) {
     if (id === currentTab) return;
     currentTab = id;
     store.set("tab", id);
     lastJson = "";
+    enterNext = true;
     render();
     load(true).then(schedule);
   }
@@ -230,6 +235,7 @@
     rail.className = "rail" + (tabs.length > 5 ? " dense" : "");   // 6+ sekme dikeyde sığsın
     tabs.forEach(function (t) {
       var b = el("button", t.id === currentTab ? "on" : "");
+      b.title = t.title;                 // ray sadece ikon gösterir, ad ipucunda
       b.appendChild(iconEl(t.icon));
       b.appendChild(el("span", "", t.title));
       b.onclick = function () { goTab(t.id); };
@@ -237,27 +243,93 @@
     });
   }
 
-  // kritik pil: üst çubukta yanıp sönen ikon (modules/battery.py, @extra("battery")). Dokununca Sistem sekmesi.
-  var battJson = "";
-  function renderBattery(list) {
-    var b = $("batt"), j = JSON.stringify(list || null);
-    if (j === battJson) return;
-    battJson = j;
-    if (!list || !list.length) { b.style.display = "none"; return; }
+  // ---------- odak adası (üst çubuk) ----------
+  // Sunucu "focus" listesini önceliğe göre sıralı gönderir (core/registry.py @focus): oyun, çalan şarkı, kritik pil...
+  // En öndeki büyük gösterilir, diğerleri yanında küçük rozet olur. Öncelik >= 30 ise body.focus: marka yazısı ve
+  // ikincil durum etiketleri çekilir, ekran o duruma odaklanır.
+  var FOCUS_AT = 30;
+  var focusList = [], focusJson = "", focusKinds = {};
+
+  function focusImg(it, cls) {
+    if (!it.img) { var ic = iconEl(it.icon || "bolt"); ic.className = "ic " + cls; return ic; }
+    var i = document.createElement("img");
+    i.className = cls + (it.img_white ? " white" : "");
+    i.alt = "";
+    i.src = it.img;
+    i.onerror = function () {
+      var ic = iconEl(it.icon || "bolt");
+      ic.className = "ic " + cls;
+      if (this.parentNode) this.parentNode.replaceChild(ic, this);
+    };
+    return i;
+  }
+
+  function focusGo(it) {
+    if (it.panel === "media") openMedia();
+    else if (it.tab) goTab(it.tab);
+  }
+
+  function renderFocus(list) {
+    list = list || [];
+    var j = JSON.stringify(list);
+    if (j === focusJson) return;
+    var prevTop = focusList[0];
+    focusJson = j;
+    focusList = list;
+    var kinds = {};
+    list.forEach(function (it) { kinds[it.kind] = 1; });
+    var kindsChanged = JSON.stringify(kinds) !== JSON.stringify(focusKinds);
+    focusKinds = kinds;
+    var top = list[0], b = $("focus");
+    document.body.classList.toggle("focus", !!top && top.priority >= FOCUS_AT);
+    if (kindsChanged) renderChips();
+    refreshHero();
+    if (!top) { b.className = "island"; return; }      // içerik kalsın: ada daralarak kaybolur
     b.innerHTML = "";
-    b.appendChild(iconEl("battery"));
-    b.appendChild(el("span", "t", list.map(function (x) { return x.label + " %" + x.pct; }).join(" · ")));
-    b.appendChild(el("span", "n", "%" + list[0].pct));
-    b.style.display = "";
+    // öndeki öğe değiştiyse içerik yumuşakça kayarak girsin (aynı öğe güncellenince titremesin)
+    var swap = !prevTop || prevTop.kind !== top.kind || prevTop.title !== top.title;
+    var fin = el("div", "fin" + (swap ? " swap" : ""));
+    fin.appendChild(focusImg(top, "fi"));
+    if (top.live && top.kind === "media") {
+      var eq = el("span", "eq");
+      eq.innerHTML = "<i></i><i></i><i></i>";
+      fin.appendChild(eq);
+    }
+    var tx = el("span", "ftx");
+    var tt = el("span", "ftt", top.title);
+    if (top.lang) tt.lang = top.lang;
+    tx.appendChild(tt);
+    if (top.sub) tx.appendChild(el("span", "fsb", top.sub));
+    fin.appendChild(tx);
+    if (top.controls === "media") {
+      var pp = el("button", "fpp");
+      pp.innerHTML = icon(top.live ? "pause" : "play");
+      pp.onclick = function (e) { e.stopPropagation(); mediaAct("media.toggle"); };
+      fin.appendChild(pp);
+    }
+    list.slice(1).forEach(function (it) {          // ikincil öğeler: küçük, dokunulabilir rozetler
+      var r = el("button", "fb" + (it.alert ? " alert" : "") + (it.live ? " live" : ""));
+      r.appendChild(focusImg(it, "fbi"));
+      if (it.badge) r.appendChild(el("span", "", it.badge));
+      r.onclick = function (e) { e.stopPropagation(); focusGo(it); };
+      fin.appendChild(r);
+    });
+    b.appendChild(fin);
+    b.className = "island show k-" + top.kind + (top.priority >= FOCUS_AT ? " big" : "") +
+      (top.alert ? " alert" : "") + (top.live ? " live" : "");
+    b.onclick = function () { focusGo(top); };
+    if (top.kind !== "media") closeAmbient();
   }
 
   function renderChips() {
     var box = $("chips");
     box.innerHTML = "";
-    if (offline) { box.appendChild(el("span", "chip err", "BAĞLANTI YOK")); return; }
-    // durum metni ya da {text, value, lang}: value ayrı span'da (örn. İngilizce oyun adı lang="en")
+    if (offline) { box.appendChild(el("span", "chip err", "Bağlantı yok")); return; }
+    // durum metni ya da {text, value, lang, kind}: value ayrı span'da (örn. İngilizce oyun adı lang="en").
+    // kind odak adasında zaten gösteriliyorsa etiket tekrar edilmez.
     ((ui && ui.status) || []).forEach(function (s) {
       if (typeof s === "string") { box.appendChild(el("span", "chip", s)); return; }
+      if (s.kind && focusKinds[s.kind]) return;
       var c = el("span", "chip", s.text + " · ");
       var v = el("span", "", s.value);
       if (s.lang) v.lang = s.lang;
@@ -270,10 +342,28 @@
     var main = $("main");
     fire("render", currentTab);                           // eklentiler: açık sekme (örn. harita akışını kapatmak için)
     main.innerHTML = "";
-    // art arda gelen list'ler yan yana sütunlara, art arda gelen buttons'lar tek satıra dizilir
-    var group = null, gtype = null;
+    main.classList.remove("leaving");
+    if (enterNext) {                                      // animasyonu baştan başlat (sınıfı kaldır, yeniden ekle)
+      enterNext = false;
+      main.classList.remove("enter");
+      void main.offsetWidth;
+      main.classList.add("enter");
+    }
+    litNext = {};
+    // art arda gelen list'ler yan yana sütunlara, art arda gelen buttons'lar tek satıra dizilir.
+    // "side": true olan bölüm bir öncekinin sağına yerleşir (örn. Modlar: ana kart + mod düğmeleri).
+    var group = null, gtype = null, prev = null;
     sections.forEach(function (s) {
       var node = section(s);
+      if (s.side && prev) {
+        var duo = el("div", "duo");
+        main.replaceChild(duo, prev);
+        duo.appendChild(prev);
+        duo.appendChild(node);
+        prev = group = gtype = null;
+        return;
+      }
+      prev = null;
       if (s.type === "list" || s.type === "buttons") {
         if (!group || gtype !== s.type) {
           group = el("div", s.type === "list" ? "cols" : "brow");
@@ -285,8 +375,28 @@
         group = null;
         gtype = null;
         main.appendChild(node);
+        prev = node;
       }
     });
+    litPrev = litNext;
+    // ana kart ekrandayken üst çubuktaki ada aynı şeyi tekrar göstermesin
+    document.body.classList.toggle("has-hero", !!main.querySelector(".hero"));
+  }
+
+  // Bir öğe yeni aktif olduysa (önceki çizimde değildi) vurgu rengi bir anda değil, yumuşakça dolsun.
+  var litPrev = {}, litNext = {};
+  function onCls(it) {
+    if (!it.active) return "";
+    var k = currentTab + "|" + it.title;
+    litNext[k] = 1;
+    return litPrev[k] ? " on" : " on lit";
+  }
+
+  // aktif öğesi olan grupta diğerleri geri çekilir (has-on): göz doğrudan seçili olana gider.
+  // Birden çok öğe aktifse (örn. iki ekran da açık) bu bir seçim değil durumdur: "multi" ile daha sakin çizilir.
+  function hasOn(items) {
+    var n = items.filter(function (it) { return it.active; }).length;
+    return n > 1 ? " has-on multi" : n ? " has-on" : "";
   }
 
   function section(s) {
@@ -307,9 +417,11 @@
   var WIDGETS = {
     tiles: function (s) {
       var items = s.items || [];
-      var g = el("div", "tiles" + (items.length > 4 ? " small" : ""));
+      // layout "stack": tek sütun, satır gibi geniş düğmeler (ikon + ad + seçiliyse tik)
+      var stack = s.layout === "stack";
+      var g = el("div", "tiles" + (stack ? " stack" : items.length > 4 ? " small" : "") + hasOn(items));
       items.forEach(function (it, i) {
-        var b = el("button", "tile" + (it.active ? " on" : ""));
+        var b = el("button", "tile" + onCls(it));
         if (it.lang) b.lang = it.lang;
         if (it.img) {
           var im = document.createElement("img");
@@ -335,15 +447,20 @@
         b.appendChild(el("span", "tt", it.title));
         if (it.sub) b.appendChild(el("span", "sb", it.sub));
         b.appendChild(el("span", "tag", "● AKTİF"));
+        if (stack) {
+          var ck = el("span", "ck");
+          ck.innerHTML = icon("check");
+          b.appendChild(ck);
+        }
         b.onclick = function () { act(it, b); };
         g.appendChild(b);
       });
       return g;
     },
     list: function (s) {
-      var box = el("div", "list");
+      var box = el("div", "list" + hasOn(s.items || []));
       (s.items || []).forEach(function (it) {
-        var b = el("button", "row" + (it.active ? " on" : ""));
+        var b = el("button", "row" + onCls(it));
         b.appendChild(iconEl(it.icon));
         var tx = el("span", "tx");
         tx.appendChild(el("div", "tt", it.title));
@@ -358,9 +475,12 @@
     buttons: function (s) {
       var box = el("div", "btns");
       (s.items || []).forEach(function (it) {
-        var b = el("button", "btn");
+        // "on": true/false verilirse düğme aç/kapa anahtarı olarak çizilir (yazıda "· Açık" yazmaya gerek yok)
+        var tg = it.on === true || it.on === false;
+        var b = el("button", "btn" + (tg ? " tg" + (it.on ? " on" : "") : ""));
         if (it.icon) b.appendChild(iconEl(it.icon));
         b.appendChild(el("span", "", it.title));
+        if (tg) b.appendChild(el("i", "sw"));
         b.onclick = function () { act(it, b); };
         box.appendChild(b);
       });
@@ -385,14 +505,24 @@
       });
       return g;
     },
+    // ana kart: o an en önemli durum (focus listesinin başı) büyük; hiçbir şey yoksa sakin saat + tarih.
+    // Odak değişince sayfa yeniden çizilmeden kendini günceller (refreshHero). s.mode: boşta altta yazan mod adı.
+    hero: function (s) {
+      var box = el("div", "hero");
+      box._spec = s;
+      drawHero(box);
+      return box;
+    },
     text: function (s) {
       return el("div", "txt", s.text || "");
     }
   };
 
   // ---------- oyun teması ----------
-  // Sunucu /api/ui cevabında "theme" gönderir (modules/games.py). null = siyah-beyaz.
-  var DEFAULT_THEME = { id: "", accent: "#ffffff", accent2: "#ffffff", bg: "#000000", fg: "#ffffff", fx: "" };
+  // Sunucu /api/ui cevabında "theme" gönderir (modules/games.py). null = varsayılan sade tema.
+  // Sade tema: oyun sadece vurgu rengini değiştirir, zemin ve yazı rengi hep aynı koyu kalır (oyunun bg/fg'si kullanılmaz).
+  var BG = "#0b0b0c", FG = "#f2f2f2";
+  var DEFAULT_THEME = { id: "", accent: FG, accent2: FG, fx: "" };
   var themeId = null;
 
   function hexRgb(h) {
@@ -416,13 +546,11 @@
     if (id === themeId) return;
     themeId = id;
     var r = document.documentElement.style;
-    r.setProperty("--ac", t.accent || "#fff");
-    r.setProperty("--ac2", t.accent2 || t.accent || "#fff");
-    r.setProperty("--bg", t.bg || "#000");
-    r.setProperty("--fg", t.fg || "#fff");
+    r.setProperty("--ac", t.accent || FG);
+    r.setProperty("--ac2", t.accent2 || t.accent || FG);
     // vurgu zemininde okunur yazı: açık renkte koyu, koyu renkte beyaz
-    var L = luminance(t.accent);
-    r.setProperty("--on-ac", (L + 0.05) / 0.05 >= 1.05 / (L + 0.05) ? (t.bg || "#000") : "#ffffff");
+    var L = luminance(t.accent || FG);
+    r.setProperty("--on-ac", (L + 0.05) / 0.05 >= 1.05 / (L + 0.05) ? BG : "#ffffff");
     var cls = document.body.className.replace(/\bfx-\S+/g, "").replace(/\bgame\b/g, "").replace(/\s+/g, " ").trim();
     // body.game: oyun teması aktif -> duvar kağıdı gizlenir, oyunun zemini görünür
     document.body.className = cls + (t.fx ? " fx-" + t.fx : "") + (id ? " game" : "");
@@ -436,7 +564,7 @@
       wm.className = "wm";
     }
     var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", t.bg || "#000");
+    if (meta) meta.setAttribute("content", BG);
   }
 
   // ---------- masaüstü duvar kağıdı (oyun teması yokken arka plan) ----------
@@ -517,8 +645,8 @@
   function openMatches() {
     var o = $("match");
     o.className = "match show";
-    o.innerHTML = '<div class="mh"><span>MAÇLAR</span><button class="ib" id="mclose"></button></div>' +
-      '<div class="mb" id="mbody"><div class="boot">YÜKLENİYOR<i class="cursor"></i></div></div>';
+    o.innerHTML = '<div class="mh"><span>Maçlar</span><button class="ib" id="mclose"></button></div>' +
+      '<div class="mb" id="mbody"><div class="boot">Yükleniyor…</div></div>';
     $("mclose").innerHTML = icon("close");
     $("mclose").onclick = closeMatches;
     loadMatches();
@@ -563,8 +691,9 @@
     }).catch(function () {});
   }
 
-  // ---------- şu an çalan medya (skorun solunda) + medya paneli ----------
+  // ---------- şu an çalan medya + medya paneli ----------
   // Sunucu "media" alanında {title, artist, app, playing, pos, dur, cover} gönderir (modules/media.py).
+  // Üst çubukta odak adası gösterir (renderFocus); burada sadece durum ve panel tutulur.
   var media = null, mediaKey = "", mediaAt = 0;
 
   function fmtTime(sec) {
@@ -596,40 +725,43 @@
   function renderMedia(md) {
     media = md;
     mediaAt = Date.now();
-    var b = $("media");
-    if (!md) {
-      b.style.display = "none";
-      document.body.classList.remove("has-media");
-      return;
-    }
-    b.style.display = "";
-    document.body.classList.add("has-media");
+    if (!md) { closeMedia(); mediaKey = ""; return; }
     var key = [md.title, md.artist, md.playing, md.cover].join("|");
     if (key !== mediaKey) {                 // sadece şarkı/durum değişince yeniden çiz (titreme olmasın)
       mediaKey = key;
-      b.innerHTML = "";
-      b.className = "media" + (md.playing ? " playing" : "");
-      b.appendChild(coverEl("cv"));
-      var eq = el("span", "eq");
-      eq.innerHTML = "<i></i><i></i><i></i>";
-      b.appendChild(eq);
-      var tx = el("span", "mtx");
-      tx.appendChild(el("span", "mtt", md.title));
-      if (md.artist) tx.appendChild(el("span", "mar", md.artist));
-      b.appendChild(tx);
       if ($("mpanel").className.indexOf("show") >= 0) drawMediaPanel();
     }
+    if (!md.playing) closeAmbient();
   }
 
-  function openMedia() {
+  // ambient: dokunulmadan IDLE_MS geçtiyse ve öndeki odak çalan şarkıysa medya paneli kendiliğinden açılır
+  // (masadaki telefon "şu an çalıyor" ekranına döner). Oyun ya da kritik pil öndeyse açılmaz.
+  function openMedia(ambient) {
     if (!media) return;
-    $("mpanel").className = "mpanel show";
+    $("mpanel").className = "mpanel show" + (ambient ? " ambient" : "");
     drawMediaPanel();
   }
 
   function closeMedia() {
     $("mpanel").className = "mpanel";
   }
+
+  function closeAmbient() {
+    if ($("mpanel").className.indexOf("ambient") >= 0) closeMedia();
+  }
+
+  var IDLE_MS = 90000, lastInput = Date.now();
+  function anyOpen() {
+    return ["mpanel", "match", "pwpanel"].some(function (id) { return $(id).className.indexOf("show") >= 0; });
+  }
+  ["touchstart", "mousedown", "keydown", "wheel"].forEach(function (ev) {
+    document.addEventListener(ev, function () { lastInput = Date.now(); }, true);
+  });
+  setInterval(function () {
+    var top = focusList[0];
+    if (offline || busy || document.hidden || Date.now() - lastInput < IDLE_MS) return;
+    if (top && top.kind === "media" && top.live && media && media.playing && !anyOpen()) openMedia(true);
+  }, 5000);
 
   function mediaAct(name) {
     api("/api/action", { name: name }).then(function () { load(true); });
@@ -648,7 +780,7 @@
     cw.appendChild(coverEl("big"));
     row.appendChild(cw);
     var info = el("div", "mpinfo");
-    info.appendChild(el("div", "mpapp", (media.playing ? "ÇALIYOR" : "DURAKLATILDI") + " · " + media.app));
+    info.appendChild(el("div", "mpapp", (media.playing ? "Çalıyor" : "Duraklatıldı") + " · " + media.app));
     info.appendChild(el("div", "mptitle", media.title));
     info.appendChild(el("div", "mpartist", media.artist || ""));
     var bar = el("div", "mpbar");
@@ -674,11 +806,94 @@
     tickMedia();
   }
 
+  // ---------- ana kart (hero) ----------
+  var MONTHS = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+  var DAYS = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
+
+  function heroDate(d) { return d.getDate() + " " + MONTHS[d.getMonth()] + " " + DAYS[d.getDay()]; }
+
+  function refreshHero() {
+    var list = document.querySelectorAll(".hero");
+    for (var i = 0; i < list.length; i++) drawHero(list[i]);
+  }
+
+  function drawHero(box) {
+    var s = box._spec || {}, top = focusList[0];
+    var id = top ? top.kind + "|" + top.title : "idle";
+    var key = top ? [id, top.sub, top.img, top.live, top.alert].join("|") : "idle";
+    if (box._key === key) return;            // değişmediyse dokunma (ilerleme çubuğu tickMedia ile akar)
+    var swap = box._key !== undefined && box._id !== id;
+    box._key = key;
+    box._id = id;
+    box.innerHTML = "";
+    box.className = "hero " + (top ? "k-" + top.kind + (top.alert ? " alert" : "") : "idle");
+    var c = el("div", "hin" + (swap ? " swap" : ""));
+    if (!top) heroIdle(c, s);
+    else if (top.kind === "media" && media) heroMedia(c, top);
+    else heroItem(c, top);
+    box.appendChild(c);
+    box.onclick = top && top.kind !== "media" ? function () { focusGo(top); } : null;
+    var rest = focusList.slice(1);
+    if (rest.length) {                        // diğer durumlar: sağ üstte küçük rozetler
+      var bs = el("div", "hbadges");
+      rest.forEach(function (it) {
+        var r = el("button", "hbg" + (it.alert ? " alert" : ""));
+        r.appendChild(focusImg(it, "fbi"));
+        if (it.badge) r.appendChild(el("span", "", it.badge));
+        r.onclick = function (e) { e.stopPropagation(); focusGo(it); };
+        bs.appendChild(r);
+      });
+      box.appendChild(bs);
+    }
+  }
+
+  function heroIdle(c, s) {
+    var d = new Date();
+    c.appendChild(el("div", "hclock", pad2(d.getHours()) + ":" + pad2(d.getMinutes())));
+    c.appendChild(el("div", "hdate", heroDate(d)));
+    if (s.mode) c.appendChild(el("div", "hmode", s.mode));
+  }
+
+  function heroMedia(c, top) {
+    var row = el("div", "hrow");
+    var cv = el("div", "hcover");
+    cv.appendChild(coverEl("hcv"));
+    row.appendChild(cv);
+    var tx = el("div", "htx");
+    tx.appendChild(el("div", "htt", media.title));
+    if (top.sub) tx.appendChild(el("div", "hsb", top.sub));
+    row.appendChild(tx);
+    row.onclick = function () { openMedia(); };
+    c.appendChild(row);
+    var bar = el("div", "hbar");
+    bar.appendChild(el("div", "f"));
+    c.appendChild(bar);
+    var ctl = el("div", "hctl");
+    [["prev", "media.prev"], [media.playing ? "pause" : "play", "media.toggle"], ["next", "media.next"]].forEach(function (x, i) {
+      var b = el("button", "hb" + (i === 1 ? " pp" : ""));
+      b.innerHTML = icon(x[0]);
+      b.onclick = function (e) { e.stopPropagation(); mediaAct(x[1]); };
+      ctl.appendChild(b);
+    });
+    c.appendChild(ctl);
+    tickMedia();
+  }
+
+  function heroItem(c, top) {
+    c.appendChild(focusImg(top, top.img ? "hlogo" : "hicon"));
+    var tt = el("div", "htt big", top.title);
+    if (top.lang) tt.lang = top.lang;
+    c.appendChild(tt);
+    if (top.sub) c.appendChild(el("div", "hsb", top.sub));
+  }
+
   function tickMedia() {
-    var f = $("mpfill"), tm = $("mptime");
-    if (!media || !f) return;
-    var p = mediaPos();
-    f.style.width = (media.dur ? Math.min(100, p * 100 / media.dur) : 0) + "%";
+    var f = $("mpfill"), tm = $("mptime"), hb = document.querySelectorAll(".hero .hbar .f");
+    if (!media || (!f && !hb.length)) return;
+    var p = mediaPos(), w = (media.dur ? Math.min(100, p * 100 / media.dur) : 0) + "%";
+    for (var i = 0; i < hb.length; i++) hb[i].style.width = w;
+    if (!f) return;
+    f.style.width = w;
     tm.firstChild.textContent = fmtTime(p);
     tm.lastChild.textContent = media.dur ? fmtTime(media.dur) : "";
   }
@@ -719,7 +934,7 @@
       '<defs><linearGradient id="irisG" x1="0" y1="0" x2="0" y2="1">' +
       '<stop offset="0" stop-color="#1c1c1c"/><stop offset=".55" stop-color="#5a5a5a"/><stop offset="1" stop-color="#d8d8d8"/>' +
       '</linearGradient></defs></svg>' +
-      '<div class="off-t">BİLGİSAYAR KAPALI / UYKUDA<i class="cursor"></i></div>' +
+      '<div class="off-t">Bilgisayar kapalı ya da uykuda</div>' +
       '<div class="off-s" id="offSub"></div>';
   }
 
@@ -758,14 +973,17 @@
   function tick() {
     var d = new Date();
     $("clock").textContent = pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+    var hc = document.querySelectorAll(".hero .hclock"), hd = document.querySelectorAll(".hero .hdate");
+    for (var i = 0; i < hc.length; i++) hc[i].textContent = $("clock").textContent;
+    for (i = 0; i < hd.length; i++) hd[i].textContent = heroDate(d);
   }
 
   // ---------- güç (modules/power.py) ----------
   // Yanlışlıkla kapanmasın: düğme 1,2 sn basılı tutulunca çalışır, bırakılırsa iptal.
   var POWER = [
-    ["power.shutdown", "Kapat", "PC KAPATILIYOR"],
-    ["power.restart", "Yeniden başlat", "YENİDEN BAŞLATILIYOR"],
-    ["power.sleep", "Uyku", "UYKUYA ALINIYOR"]
+    ["power.shutdown", "Kapat", "Bilgisayar kapatılıyor"],
+    ["power.restart", "Yeniden başlat", "Yeniden başlatılıyor"],
+    ["power.sleep", "Uyku", "Uykuya alınıyor"]
   ];
 
   function openPower() {
@@ -828,13 +1046,11 @@
 
   buildOff();
   $("score").onclick = openMatches;
-  $("media").onclick = openMedia;
   $("btnFull").innerHTML = icon("full");
   $("btnRefresh").innerHTML = icon("refresh");
   $("btnFull").onclick = fullscreen;
   $("btnPower").innerHTML = icon("power");
   $("btnPower").onclick = openPower;
-  $("batt").onclick = function () { goTab("system"); };
   deskScale();
   window.addEventListener("resize", function () { deskScale(); fire("resize"); });
   // masaüstü klavye: 1-9 sekmeler, Esc paneli kapatır, F tam ekran, R yenile, +/- haritada zum

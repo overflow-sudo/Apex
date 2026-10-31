@@ -106,10 +106,10 @@ def view():
         {"label": "VRAM", "value": "%.1f" % (vu / GB) if vu is not None else "—",
          "unit": ("/ %d GB" % round(vt / GB)) if vt else "GB", "pct": vram_pct, "hot": (vram_pct or 0) >= 95,
          "sub": "%d%% dolu" % vram_pct if vram_pct is not None else ""},
-        _temp_item("CPU ISI", temps.get("cpu"), lhm or _info.get("cpu", "")),
-        _temp_item("GPU ISI", temps.get("gpu"), lhm or _info.get("gpu", "")),
+        _temp_item("CPU sıcaklığı", temps.get("cpu"), lhm or _info.get("cpu", "")),
+        _temp_item("GPU sıcaklığı", temps.get("gpu"), lhm or _info.get("gpu", "")),
     ]
-    return [{"type": "stats", "title": "Açık · " + _uptime(d.get("uptime")), "fill": True, "items": items}]
+    return [{"type": "stats", "title": "Açık kalma süresi · " + _uptime(d.get("uptime")), "fill": True, "items": items}]
 
 
 def _fmt(v):

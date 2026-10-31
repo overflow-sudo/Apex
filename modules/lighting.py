@@ -79,8 +79,7 @@ def _loop():
                 if t.get("id") != applied:
                     log("klavye ışığı: %s · %d/%d tuş · yöntem %s" % (t.get("name"), ok, total, logiled.key_method))
                 applied, painted_at = t.get("id"), time.time()
-                # İngilizce ad Python'da büyütülüyor (CSS'in Türkçe kuralı "SKYRİM" yapmasın)
-                _status = "Bağlı · %s · %d/%d tuş" % ((t.get("short") or t.get("name") or "").upper(), ok, total)
+                _status = "%s · %d/%d tuş" % (t.get("short") or t.get("name") or "", ok, total)
         except Exception as e:
             _status = "Hata: %s" % e
             log("klavye ışığı hatası:", e)
@@ -93,14 +92,13 @@ def start():
     if procs.IS_WIN:
         threading.Thread(target=_loop, daemon=True).start()
     else:
-        globals()["_status"] = "Sadece WINDOWS"
+        globals()["_status"] = "Sadece Windows'ta"
 
 
 @section("theme", order=20)
 def light_section():
-    return {"type": "buttons", "title": "Klavye ışığı · " + _status, "items": [
-        {"title": "Işık takibi · " + ("Açık" if _enabled else "Kapalı"), "icon": "keyboard",
-         "action": "lighting.toggle"},
+    return {"type": "buttons", "title": ("Klavye ışığı · " + _status) if _enabled else None, "items": [
+        {"title": "Klavye ışığı", "icon": "keyboard", "on": _enabled, "action": "lighting.toggle"},
     ]}
 
 
