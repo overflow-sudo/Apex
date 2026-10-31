@@ -1,0 +1,8 @@
+/* Örnek eklenti. Sınıflar eklenti adıyla başlar (ornek-...). Sabit renk yok: tema değişkenleri. */
+.ornek-kutu { flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border: 1px solid var(--line); background: var(--panel); }
+.ornek-sayi { font-family: var(--mono); font-size: 64px; font-weight: 700; color: var(--ac); }
+.ornek-btn { display: flex; align-items: center; margin-top: 12px; padding: 8px 14px; border: 1px solid var(--line-hi);
+  font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
+.ornek-btn .ic { width: 18px; height: 18px; margin-right: 8px; }
+.ornek-btn:active { background: var(--ac); color: var(--on-ac); }

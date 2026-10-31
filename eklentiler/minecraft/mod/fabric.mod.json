@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "pckumanda",
+  "version": "1.0.2",
+  "name": "PC Kumanda Bridge",
+  "description": "Oyuncunun konumunu yerel PC Kumanda'ya gönderir (sadece istemci, sunucuya dokunmaz).",
+  "authors": ["Emir"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["pckumanda.Bridge"]
+  },
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "java": ">=21"
+  }
+}

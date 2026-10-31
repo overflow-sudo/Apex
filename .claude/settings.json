@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "ask": [
+      "Edit(core/**)",
+      "Edit(web/**)",
+      "Edit(modules/**)",
+      "Edit(kurulum/**)",
+      "Edit(pc_kumanda.py)",
+      "Edit(config.py)",
+      "Edit(Kur.bat)",
+      "Edit(Kaldir.bat)"
+    ]
+  }
+}

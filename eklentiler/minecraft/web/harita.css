@@ -1,0 +1,110 @@
+/* Minecraft haritası (eklentiler/minecraft). Tüm sınıflar mc ile başlar; renkler tema değişkenlerinden (--ac, --fg...). */
+.mcmap { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; border: 1px solid var(--line-hi);
+  background: #05070a; touch-action: none; cursor: grab; }
+.mclayer, .mcmarks { position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: hidden; }
+.mctile { position: absolute; image-rendering: pixelated; image-rendering: crisp-edges; -webkit-user-drag: none; user-select: none; }
+.mcmk {
+  position: absolute; transform: translate(-50%, -50%); min-width: 18px; height: 18px; padding: 0 3px;
+  font-family: var(--mono); font-size: 9.5px; font-weight: 700; line-height: 18px; text-align: center; color: #000;
+  border: 1px solid #000; box-shadow: 0 0 0 1px rgba(255,255,255,.5); cursor: pointer;
+}
+.mcplayer { position: absolute; width: 26px; height: 26px; color: var(--ac); z-index: 3; pointer-events: none;
+  filter: drop-shadow(0 0 3px rgba(0,0,0,.8)); transition: left .1s linear, top .1s linear; }
+.mcplayer.stale { color: #888; }
+.mcplayer::after { content: ""; position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px;
+  border: 2px solid var(--ac); border-radius: 50%; opacity: 0; animation: mc-ping 2s ease-out infinite; }
+.mcplayer.stale::after { display: none; }
+@keyframes mc-ping { 0% { transform: scale(.3); opacity: .9; } 100% { transform: scale(1.2); opacity: 0; } }
+.mchud { position: absolute; left: 8px; top: 8px; z-index: 4; display: flex; flex-wrap: wrap; pointer-events: none; }
+.mchud > span { background: rgba(0,0,0,.72); border: 1px solid var(--line-hi); padding: 3px 8px; margin: 0 6px 6px 0;
+  font-family: var(--mono); font-size: 12px; white-space: nowrap; }
+.mchud b { color: var(--ac); }
+.mchud .mcdim { color: var(--dim); font-size: 11px; }
+.mcinfo { position: absolute; left: 8px; bottom: 6px; z-index: 4; font-family: var(--mono); font-size: 10px; color: var(--dim);
+  background: rgba(0,0,0,.6); padding: 2px 6px; pointer-events: none; max-width: 75%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mctip { position: absolute; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 5; display: none;
+  background: var(--ac); color: var(--on-ac); font-family: var(--mono); font-size: 12px; padding: 5px 10px; white-space: nowrap; }
+.mcctl { position: absolute; right: 8px; top: 8px; z-index: 4; display: flex; flex-direction: column; }
+.mcb { width: 40px; height: 40px; padding: 10px; margin-bottom: 6px; background: rgba(0,0,0,.72); border: 1px solid var(--line-hi); }
+.mcb.on { border-color: var(--ac); color: var(--ac); }
+.mcb:active { background: var(--ac); color: var(--on-ac); }
+/* hedef, rota, arama */
+.mcroute { position: absolute; left: 0; top: 0; z-index: 2; pointer-events: none; overflow: visible; }
+.mcroute line { stroke: var(--ac); stroke-width: 3; stroke-dasharray: 10 7; stroke-linecap: round;
+  filter: drop-shadow(0 0 2px #000); animation: mc-dash 1s linear infinite; }
+@keyframes mc-dash { to { stroke-dashoffset: -17; } }
+.mcflag { position: absolute; width: 30px; height: 30px; margin: -27px 0 0 -6px; z-index: 3; pointer-events: none;
+  color: var(--ac); filter: drop-shadow(0 0 2px #000) drop-shadow(0 0 1px #000); }
+.mcpin { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; z-index: 3; pointer-events: none;
+  border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 2px #000; background: rgba(255,255,255,.25); }
+.mchud .mcroutei { pointer-events: auto; border-color: var(--ac); }
+.mchud .mcroutei b { color: var(--ac); }
+.mcx { margin-left: 8px; padding: 0 4px; color: var(--dim); font-size: 14px; line-height: 1; }
+.mctip { pointer-events: auto; }
+.mctip span { vertical-align: middle; }
+.mctb { margin-left: 10px; padding: 3px 9px; background: #000; color: var(--ac); font-family: var(--mono); font-size: 11px;
+  letter-spacing: .08em; text-transform: uppercase; vertical-align: middle; }
+.mcform { position: absolute; right: 56px; top: 8px; z-index: 6; display: none; background: rgba(0,0,0,.92);
+  border: 1px solid var(--ac); padding: 10px; width: 230px; }
+.mcf { display: flex; align-items: center; margin-bottom: 8px; font-family: var(--mono); }
+.mcf > span { width: 16px; color: var(--ac); font-weight: 700; }
+.mcsign { width: 30px; height: 34px; margin-right: 6px; border: 1px solid var(--line-hi); font-family: var(--mono); }
+.mcf input { flex: 1; min-width: 0; height: 34px; background: #111; color: var(--fg); border: 1px solid var(--line-hi);
+  font-family: var(--mono); font-size: 15px; padding: 0 8px; }
+.mcfrow { display: flex; }
+.mcfb { flex: 1; height: 36px; border: 1px solid var(--line-hi); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+.mcfb + .mcfb { margin-left: 8px; }
+.mcfb.pri { background: var(--ac); color: var(--on-ac); border-color: var(--ac); }
+
+/* çok uzak zumda biyomlar pikselden küçük: harita soluk, rota/bayrak öne çıksın */
+.mclayer.far .mctile { filter: brightness(.5) saturate(.6); }
+/* düğmeler sığmazsa ikinci sütun (sola doğru) */
+.mcctl { flex-wrap: wrap-reverse; max-height: calc(100% - 10px); align-content: flex-start; }
+.mcctl .mcb { margin-left: 6px; }
+/* paneller: katmanlar, kayıtlı yerler */
+.mcpanel { width: 260px; max-height: calc(100% - 16px); overflow-y: auto; -webkit-overflow-scrolling: touch; right: 102px; }
+.mcform { right: 102px; }
+.mcph { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ac);
+  margin-bottom: 8px; }
+.mclr { display: flex; align-items: center; width: 100%; padding: 6px 4px; border-bottom: 1px solid var(--line); text-align: left;
+  font-size: 13px; color: var(--dim); }
+.mclr.on { color: var(--fg); }
+.mclr .mcln { flex: 1; }
+.mclr .mcck { width: 18px; color: var(--ac); font-weight: 700; text-align: right; }
+.mcbadge { min-width: 24px; height: 18px; margin-right: 8px; padding: 0 3px; font-family: var(--mono); font-size: 9.5px;
+  font-weight: 700; line-height: 18px; text-align: center; color: #000; border: 1px solid #000; }
+.mclr:not(.on) .mcbadge { opacity: .35; }
+.mcnote { font-size: 11px; color: var(--dim); margin-top: 8px; line-height: 1.4; }
+.mcname { width: 100%; height: 34px; margin-bottom: 8px; background: #111; color: var(--fg); border: 1px solid var(--line-hi);
+  font-size: 15px; padding: 0 8px; }
+.mclist { margin-top: 8px; }
+.mcwr { display: flex; align-items: center; border-top: 1px solid var(--line); padding: 6px 0; }
+.mcwi { flex: 1; min-width: 0; cursor: pointer; }
+.mcwi b { display: block; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mcwi span { font-family: var(--mono); font-size: 10.5px; color: var(--dim); }
+.mcwb { width: 34px; height: 34px; padding: 8px; margin-left: 6px; border: 1px solid var(--line-hi); font-size: 16px; line-height: 1; }
+/* haritadaki kayıtlı yer */
+.mcwps { position: absolute; left: 0; top: 0; z-index: 3; }
+.mcwp { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; color: var(--ac); cursor: pointer;
+  filter: drop-shadow(0 0 2px #000) drop-shadow(0 0 1px #000); }
+.mcwp svg { fill: currentColor; }
+.mcwp span { position: absolute; left: 50%; top: 22px; transform: translateX(-50%); white-space: nowrap; font-family: var(--mono);
+  font-size: 10px; font-weight: 700; color: #fff; background: rgba(0,0,0,.7); padding: 0 4px; }
+/* ipucu: iki satır */
+.mctip { white-space: normal; max-width: 90%; text-align: center; }
+.mctl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mctrow { margin-top: 5px; }
+.mctrow .mctb { margin: 0 4px; }
+.mchud .mcbiome { color: var(--fg); border-color: var(--ac2, var(--line-hi)); }
+
+/* fareyle gezinme */
+@media (hover: hover) and (pointer: fine) {
+  .mcmk, .mcwp { cursor: pointer; }
+  .mcb:hover { color: var(--fg); border-color: var(--fg); }
+  .mcmap { cursor: grab; }
+  .mcmap:active { cursor: grabbing; }
+  .mcmk:hover, .mcwp:hover { z-index: 6; transform: translate(-50%, -50%) scale(1.2); }
+  .mcwp:hover { transform: scale(1.2); }
+}
+/* harita düğmeleri her zaman yapı işaretlerinin üstünde (telefonda da) */
+.mcctl { z-index: 7; }

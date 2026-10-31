@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+# bu bilgisayara özel / üretilen dosyalar (kumanda bunları kendisi oluşturur)
+yerel/
+cache/
+logs/
+*.csv
+*.cfg
+monitor_adlari.json
+kurulum/python_yolu.txt
+# Claude Code kişisel ayarları
+.claude/settings.local.json
