@@ -144,6 +144,12 @@ Kart öğesine `"img": url` (ve `"img_white": true`) verilirse ikon yerine resim
 - **Test:** Linux'ta `core.system.read_csv/run` yerine sahte fonksiyonlar koyup gerçek CSV dökümleriyle
   sunucu çalıştırılabilir. Arayüzü 780×360 yatay boyutta Playwright ile görsel olarak kontrol et.
 
+## Koruma ve geri alma
+- Proje bir git deposu (2026-10-31, dal `main`). Yeni bir işe başlamadan `git status` temiz olmalı; bir şey bozulursa
+  `git restore <dosya>` / `git checkout -- .` ile son kayda dönülür. Commit'i kullanıcı isteyince at.
+- `.claude/settings.json`: `core/`, `web/`, `modules/`, `kurulum/`, `config.py`, `pc_kumanda.py`, `Kur.bat`, `Kaldir.bat`
+  düzenlemesi her seferinde kullanıcı onayı ister. Eklenti oturumunda bu onay çıkıyorsa yanlış yerdesin demektir.
+
 ## Konu notları (`notlar/`) — sadece o konuda çalışırken oku
 
 | Dosya | İçerik |
