@@ -3,6 +3,11 @@
 (CLAUDE.md'den taşındı, 2026-10-31. Genel kurallar CLAUDE.md'de.)
 
 ## Değişiklik geçmişi
+- 2026-11-01: Müzik sekmesinde canlı spektrum (32 çubuk, kapağın altında): EAMusic sayfası çalan sesi Web Audio `AnalyserNode` ile
+  ölçüp `/api/remote/spectrum`'a 25/sn gönderir, eklenti `@stream("/applemusic/spektrum")` ile telefona aktarır. Ayrıntı
+  `eklentiler/applemusic/NOTLAR.md` → "Spektrum".
+- 2026-11-01: Apple Music eklentisi (`eklentiler/applemusic/`): Müzik sekmesi (order 32) EAMusic istemcisini yerel köprü
+  (`127.0.0.1:3000/api/remote`) üzerinden yönetir: oynat/duraklat, önceki/sonraki, karışık, tekrar, ses, çalma listesi seçme, "EAMusic'i aç".
 - 2026-10-31: Sade tema 3. adım: Ekran/Ses/Sistem/Tema aynı dilde. Aç/kapa düğmeleri anahtar oldu (`"on"`), Tema'da
   oyun efekti anahtarı (`theme.fx`), çoklu aktif kartlar sakin (`multi`), sistem kartında ayrıntı etiket satırında, büyük harfli metinler kalktı.
 - 2026-10-31: Sade tema 2. adım: Modlar = solda ana kart (`hero`: çalan şarkı / oyun / kritik pil, yoksa saat + tarih),

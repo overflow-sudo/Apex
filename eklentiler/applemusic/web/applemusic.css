@@ -1,0 +1,90 @@
+/* Apple Music eklentisi. Sınıflar applemusic- ile başlar. Sabit renk yok: tema değişkenleri.
+   Eski Android Chrome: flex gap, aspect-ratio, inset, :has() yok. */
+
+.applemusic { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+
+/* --- kapalı / bağlanmadı --- */
+.applemusic-off { flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; background: var(--panel); border-radius: var(--r); padding: 16px; }
+.applemusic-off-ic { width: 56px; height: 56px; border-radius: 50%; background: var(--panel2); color: var(--dim);
+  display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+.applemusic-off-ic .ic { width: 28px; height: 28px; }
+.applemusic-off-t { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+.applemusic-off-s { font-size: 13px; color: var(--dim); max-width: 420px; margin-bottom: 14px; }
+.applemusic-open { padding: 10px 22px; border-radius: 999px; background: var(--ac); color: var(--on-ac);
+  font-size: 14px; font-weight: 600; }
+.applemusic-open:disabled { opacity: .5; }
+
+/* --- oynatıcı: solda kontrol, sağda listeler --- */
+.applemusic-on { flex: 1 1 auto; min-height: 0; display: flex; }
+.applemusic-sol { width: 46%; max-width: 360px; flex: none; display: flex; flex-direction: column; justify-content: space-between;
+  background: var(--panel); border-radius: var(--r); padding: 12px; margin-right: 8px; min-height: 0; }
+.applemusic-sag { flex: 1 1 auto; min-width: 0; min-height: 0; display: flex; flex-direction: column;
+  background: var(--panel); border-radius: var(--r); padding: 10px 10px 0; }
+
+.applemusic-ust { display: flex; align-items: center; min-width: 0; }
+.applemusic-art { position: relative; width: 72px; height: 72px; flex: none; border-radius: 10px; overflow: hidden;
+  background: var(--panel2); color: var(--dim); display: flex; align-items: center; justify-content: center; margin-right: 12px; }
+.applemusic-art img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: none; }
+.applemusic-art.has img { display: block; }
+.applemusic-art .ic { width: 30px; height: 30px; }
+.applemusic-art.has .ic { display: none; }
+.applemusic-meta { min-width: 0; flex: 1 1 auto; }
+.applemusic-title { font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.applemusic-artist { font-size: 13px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+
+/* spektrum: kapağın altında kalan boşluğu doldurur (kısa ekranda küçülür, en az 18 px) */
+.applemusic-spek { display: block; width: 100%; flex: 1 1 auto; min-height: 18px; max-height: 70px; margin-top: 8px; }
+
+.applemusic-prog { margin-top: 8px; }
+.applemusic-bar { position: relative; height: 4px; border-radius: 4px; background: var(--line-hi); margin: 8px 0 4px; }
+.applemusic-bar:before { content: ""; position: absolute; left: 0; right: 0; top: -10px; bottom: -10px; } /* geniş dokunma alanı */
+.applemusic-fill { height: 100%; width: 0; border-radius: 4px; background: var(--ac); }
+.applemusic-times { display: flex; justify-content: space-between; font-size: 11px; color: var(--dim);
+  font-family: var(--mono); }
+
+.applemusic-ctr { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
+.applemusic-btn { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  color: var(--fg); position: relative; }
+.applemusic-btn .ic { width: 22px; height: 22px; }
+.applemusic-btn:active { background: var(--panel2); }
+.applemusic-play { width: 54px; height: 54px; background: var(--ac); color: var(--on-ac); }
+.applemusic-play:active { background: var(--ac); opacity: .8; }
+.applemusic-play .ic { width: 26px; height: 26px; }
+.applemusic-tog { color: var(--dim); }
+.applemusic-tog .ic { width: 20px; height: 20px; }
+.applemusic-tog.on { color: var(--ac); }
+.applemusic-tog.on:after { content: ""; position: absolute; bottom: 4px; left: 50%; width: 4px; height: 4px; margin-left: -2px;
+  border-radius: 50%; background: var(--ac); }
+.applemusic-loading:before { content: ""; position: absolute; top: -4px; left: -4px; right: -4px; bottom: -4px; border-radius: 50%;
+  border: 2px solid transparent; border-top-color: var(--ac); animation: applemusic-spin .8s linear infinite; }
+@keyframes applemusic-spin { to { transform: rotate(360deg); } }
+
+.applemusic-vol { display: flex; align-items: center; margin-top: 6px; color: var(--dim); }
+.applemusic-vol .ic { width: 18px; height: 18px; flex: none; margin-right: 10px; }
+.applemusic-range { -webkit-appearance: none; appearance: none; flex: 1 1 auto; height: 4px; border-radius: 4px;
+  background: var(--line-hi); outline: none; }
+.applemusic-range::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--fg); }
+
+/* --- çalma listeleri --- */
+.applemusic-h { font-size: 13px; color: var(--dim); margin: 0 2px 8px; }
+.applemusic-lists { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); grid-gap: 10px; align-content: start;
+  padding-bottom: 10px; }
+.applemusic-card { position: relative; min-width: 0; }
+.applemusic-cover { position: relative; display: block; width: 100%; height: 0; padding-top: 100%; border-radius: 10px;
+  overflow: hidden; background: var(--panel2); color: var(--dim); }
+.applemusic-cover img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+.applemusic-cover .ic { position: absolute; top: 50%; left: 50%; width: 28px; height: 28px; margin: -14px 0 0 -14px; }
+.applemusic-cover:active { opacity: .7; }
+.applemusic-mix { position: absolute; top: 4px; right: 4px; width: 30px; height: 30px; background: var(--bg);
+  color: var(--fg); opacity: .85; }
+.applemusic-mix .ic { width: 16px; height: 16px; }
+.applemusic-name { font-size: 12px; margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.applemusic-empty { grid-column: 1 / -1; color: var(--dim); font-size: 13px; text-align: center; padding: 30px 0; }
+
+@media (hover: hover) and (pointer: fine) {
+  .applemusic-btn, .applemusic-cover, .applemusic-open, .applemusic-bar { cursor: pointer; }
+  .applemusic-btn:hover { background: var(--panel2); }
+  .applemusic-play:hover { background: var(--ac); opacity: .9; }
+}
