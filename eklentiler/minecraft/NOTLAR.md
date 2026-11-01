@@ -56,6 +56,18 @@ Dosyalar (hepsi `eklentiler/minecraft/` altında): `eklenti.py` (sunucu), `web/h
   Hedef yapma: koordinat arama formu (X/Z, ± düğmeleri, "Git"/"Hedef yap"), haritada 550 ms basılı tutma,
   yapı ipucundaki "Hedef yap". Kuş uçuşu SVG kesikli çizgi + bayrak; HUD'da "HEDEF <mesafe> · sağa/sola N°"
   (yaw'a göre; Nether'da ÷8 çevrilir).
+- **Rota türleri (2026-10-31):** hedef varken haritanın sol altında Kuş uçuşu / Tekne / At düğmeleri (`localStorage`
+  `mcRouteMode`). Tekne ve at sadece Overworld'de çalışır. Rotayı sunucu hesaplar: `rota.py`, `GET /mc/route?s&m=boat|horse&x0&z0&x1&z1`.
+  DLL değişmedi: biyom ızgarası `mcmap_tile` RGB'sinden alınıyor, renk → biyom tablosu `mcmap_biome` ile öğreniliyor
+  (renkler seed'den bağımsız; mağara biyomu çıkarsa y 90/120/160 ile tekrar soruluyor). A*, 8 yön, ölçek mesafeye göre
+  4/16/64 blok/hücre (kenar ≤ 520 hücre). Maliyet tablosu `rota.COST`. 16 ve 64 ölçekte dar nehirler kaybolabilir.
+  Ölçüm (bu seed): 1.100 blok 0,6 sn, 7.000 blok 0,1 sn. Sonuç önbellekte (8 blok yuvarlama).
+  Telefon: rota bir kez istenir, oyuncu rotadan max(48, 4×ölçek) bloktan fazla uzaklaşırsa (en fazla 5 sn'de bir) yeniden.
+  Çizim: koyu kontur + vurgu rengi; tekne için karadan taşınacak, at için yüzülecek kısım kırmızı kesikli. HUD'da kalan
+  rota uzunluğu, yön ~32 blok ilerideki rota noktasına göre ve "karada / yüzerek N blok".
+  Sahte konumla test edildi (ekran görüntüsü: tekne nehri izliyor). **Oyunda denenmedi.**
+- **Yapı ikonları (2026-10-31):** harf yerine 24×24 dolu SVG siluet (`harita.js` → `MCI`, anahtar = STRUCTS anahtarı).
+  İkon rengi zemine göre siyah/beyaz (`mcInk`). Katman menüsündeki rozetler de ikon. Bilinmeyen anahtarda harf kalır.
 - **Gecikme:** `@stream("/mc/stream")` SSE; `from_mod` her POST'ta `_notify()` → istemci ~0,1 sn gecikmeyle
   konum alır (önceden yoklama ile 1–1,5 sn). Sekmeden çıkınca `mcStreamClose`. Ölçüm: ~8 olay/sn.
 - Minecraft teması `games.detector` kancasıyla moddan gelen nabızla açılır (javaw.exe ile tanınamaz).

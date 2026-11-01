@@ -18,6 +18,7 @@ import config
 from core.system import BASE, log
 from core.registry import tab, post, route, on_start, stream, action
 from modules import games
+from . import rota
 
 CFG = getattr(config, "MINECRAFT", {})
 HERE = os.path.dirname(os.path.abspath(__file__))     # eklentiler/minecraft
@@ -384,6 +385,23 @@ def biome_at(seed, dim, x, z, y=None):
 def biome_route(q):
     name = biome_at(int(q["s"]), int(q.get("d", 0)), int(float(q["x"])), int(float(q["z"])))
     return "application/json", json.dumps({"name": name}, ensure_ascii=False).encode("utf-8")
+
+
+@route("/mc/route")
+def route_route(q):
+    """?s=seed&m=boat|horse&x0&z0&x1&z1 -> tekne/at rotası (rota.py). Sadece Overworld."""
+    lib = _lib()
+    if not lib:
+        res = {"error": "harita kütüphanesi yok"}
+    else:
+        try:
+            with _tile_sem:
+                res = rota.route(lib, _u64(q["s"]), q.get("m", "boat"), float(q["x0"]), float(q["z0"]),
+                                 float(q["x1"]), float(q["z1"]))
+        except Exception as e:
+            log("rota hesaplanamadı:", e)
+            res = {"error": str(e)}
+    return "application/json", json.dumps(res, ensure_ascii=False).encode("utf-8")
 
 
 def player_biome():

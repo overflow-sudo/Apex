@@ -19,6 +19,10 @@ $null = [Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager,
 $null = [Windows.Storage.Streams.IRandomAccessStreamWithContentType, Windows.Storage.Streams, ContentType = WindowsRuntime]
 $mgr = Await ([Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager]::RequestAsync()) ([Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager])
 
+# PowerShell cannot bind the WinRT stream to AsStreamForRead(IInputStream) ("Cannot find an overload"),
+# so call it through reflection; without this no cover was ever read.
+$asStreamForRead = [System.IO.WindowsRuntimeStreamExtensions].GetMethod('AsStreamForRead', [Type[]]@([Windows.Storage.Streams.IInputStream]))
+
 $lastKey = ''
 $coverVer = 0
 $hasCover = $false
@@ -49,7 +53,7 @@ while ($true) {
                 $coverTries++
                 try {
                     $ras = Await ($p.Thumbnail.OpenReadAsync()) ([Windows.Storage.Streams.IRandomAccessStreamWithContentType])
-                    $st = [System.IO.WindowsRuntimeStreamExtensions]::AsStreamForRead($ras)
+                    $st = $asStreamForRead.Invoke($null, @($ras))
                     $ms = New-Object System.IO.MemoryStream
                     $st.CopyTo($ms)
                     $st.Dispose()

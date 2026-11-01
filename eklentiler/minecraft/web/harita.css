@@ -108,3 +108,20 @@
 }
 /* harita düğmeleri her zaman yapı işaretlerinin üstünde (telefonda da) */
 .mcctl { z-index: 7; }
+
+/* ---- rota: tekne / at (rota.py) ---- */
+.mcroute path { fill: none; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 2px #000); }
+.mcroute .mcrw { stroke: var(--ac); stroke-width: 3.5; }
+.mcroute .mcrl { stroke: #ff6a5a; stroke-width: 3; stroke-dasharray: 6 6; }      /* tekne: karadan taşı · at: yüzerek geç */
+.mcmodes { position: absolute; left: 8px; bottom: 26px; z-index: 5; display: flex; }
+.mcmb { display: flex; align-items: center; height: 32px; padding: 0 9px; margin-right: 6px; background: rgba(0,0,0,.72);
+  border: 1px solid var(--line-hi); font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--dim); }
+.mcmb svg { width: 16px; height: 16px; margin-right: 6px; }
+.mcmb.on { background: var(--ac); color: var(--on-ac); border-color: var(--ac); }
+@media (max-width: 600px) { .mcmb span { display: none; } .mcmb svg { margin-right: 0; } }
+
+/* ---- yapı ikonları (harf yerine) ---- */
+.mcmk.ic { width: 22px; height: 22px; min-width: 0; padding: 2px; line-height: 0; }
+.mcmk.ic svg, .mcbadge.ic svg { display: block; width: 100%; height: 100%; }
+.mcbadge.ic { width: 24px; min-width: 0; padding: 1px 4px; line-height: 0; }
+.mcroute .mcrb { stroke: rgba(0,0,0,.8); stroke-width: 7.5; filter: none; }

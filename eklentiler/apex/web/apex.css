@@ -1,0 +1,93 @@
+/* APEX FINANCE eklentisi. Sabit renk yok: tema değişkenleri (--ac, --fg, --bg, --panel, --dim, --warn, --r).
+   Eski Android Chrome: flex gap / aspect-ratio / inset yok → margin ve grid-gap. */
+
+.apex { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+.apex-up { color: var(--fg); }
+.apex-down { color: var(--warn); }
+
+.apex-top { display: grid; grid-template-columns: 1.6fr 1fr 1fr; grid-gap: 8px; margin-bottom: 8px; }
+.apex-stat { background: var(--panel); border-radius: var(--r); padding: 10px 14px; min-width: 0; }
+.apex-stat-l { color: var(--dim); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.apex-stat-v { font-size: 20px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.apex-stat-big .apex-stat-v { font-size: 26px; }
+.apex-stat-s { font-size: 12px; color: var(--dim); margin-top: 1px; }
+.apex-stat-s.apex-up { color: var(--fg); }
+.apex-stat-s.apex-down { color: var(--warn); }
+
+.apex-bottom { display: grid; grid-template-columns: 1.15fr 1fr; grid-gap: 8px; flex: 1 1 auto; min-height: 0; }
+.apex-card { background: var(--panel); border-radius: var(--r); padding: 10px 14px; display: flex; flex-direction: column; min-height: 0; }
+.apex-card-h { display: flex; justify-content: space-between; color: var(--dim); font-size: 12px; margin-bottom: 4px; }
+.apex-card-x { color: var(--fg); }
+.apex-card-x.apex-down { color: var(--warn); }
+.apex-card-f { display: flex; justify-content: space-between; color: var(--dim); font-size: 11px; margin-top: 4px; }
+
+.apex-spark { display: block; width: 100%; flex: 1 1 auto; min-height: 60px; }
+.apex-spark-line { fill: none; stroke: var(--ac); stroke-width: 2; stroke-linejoin: round; }
+.apex-spark-area { fill: var(--ac); opacity: .08; }
+.apex-spark-inv { fill: none; stroke: var(--dim); stroke-width: 1.5; stroke-dasharray: 4 4; }
+
+.apex-rows { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.apex-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.apex-row:last-child { border-bottom: 0; }
+.apex-row-sym { font-size: 14px; }
+.apex-row-w { font-size: 11px; color: var(--dim); }
+.apex-row-r { text-align: right; }
+.apex-row-v { font-size: 14px; }
+.apex-row-p { font-size: 11px; }
+
+.apex-alloc { margin-top: 6px; }
+.apex-alloc-bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: var(--panel2); }
+.apex-alloc-seg { height: 100%; }
+.apex-alloc-leg { margin-top: 4px; font-size: 11px; color: var(--dim); line-height: 1.5; }
+.apex-alloc-item { white-space: nowrap; margin-right: 10px; }
+.apex-alloc-item i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 4px; vertical-align: 0; }
+.apex-s0 { background: var(--ac); }
+.apex-s1 { background: var(--ac); opacity: .7; }
+.apex-s2 { background: var(--ac); opacity: .5; }
+.apex-s3 { background: var(--ac); opacity: .35; }
+.apex-s4 { background: var(--ac); opacity: .22; }
+.apex-s5 { background: var(--dim); opacity: .4; }
+
+.apex-stale { color: var(--warn); font-size: 11px; margin-top: 6px; }
+
+.apex-off { flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: var(--panel); border-radius: var(--r); padding: 20px; }
+.apex-off-ic { width: 56px; height: 56px; border-radius: 50%; background: var(--panel2); color: var(--dim); display: flex; align-items: center; justify-content: center; }
+.apex-off-ic .ic { width: 28px; height: 28px; }
+.apex-off-t { font-size: 18px; margin-top: 10px; }
+.apex-off-s { color: var(--dim); font-size: 13px; margin-top: 4px; }
+.apex-off-btns { margin-top: 14px; }
+.apex-btn { background: var(--panel2); color: var(--fg); border: 0; border-radius: var(--r); padding: 10px 22px; font: inherit; font-size: 14px; margin: 0 5px; cursor: pointer; }
+.apex-btn:active { background: var(--ac); color: var(--on-ac); }
+
+/* ---------- boşta slayt gösterisi (tam ekran) ---------- */
+.apex-ss { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9000; background: var(--bg); color: var(--fg); display: flex; flex-direction: column; padding: 22px 34px 16px; box-sizing: border-box; cursor: pointer; }
+.apex-ss-clock { position: absolute; top: 18px; right: 30px; color: var(--dim); font-size: 18px; }
+.apex-ss-stage { flex: 1 1 auto; min-height: 0; display: flex; }
+.apex-ss-dots { text-align: center; height: 12px; }
+.apex-ss-dots i { display: inline-block; width: 6px; height: 6px; border-radius: 3px; background: var(--mute); margin: 0 3px; }
+.apex-ss-dots i.on { width: 18px; background: var(--ac); }
+.apex-ss-stamp { position: absolute; left: 34px; bottom: 14px; color: var(--mute); font-size: 11px; }
+
+.apex-slide { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; min-width: 0; opacity: 0; -webkit-transition: opacity .6s ease; transition: opacity .6s ease; }
+.apex-slide.apex-in { opacity: 1; }
+.apex-ss-label { color: var(--dim); font-size: 16px; }
+.apex-ss-big { font-size: 64px; font-weight: 300; letter-spacing: -1px; margin: 4px 0 18px; white-space: nowrap; }
+.apex-ss-row { display: flex; }
+.apex-ss-kv { margin-right: 48px; }
+.apex-ss-k { color: var(--dim); font-size: 13px; }
+.apex-ss-v { font-size: 24px; margin-top: 2px; white-space: nowrap; }
+
+/* sistem slaytı: 4 gösterge (CPU, GPU, RAM, VRAM) */
+.apex-slide-sistem .apex-ss-label { margin-bottom: 14px; }
+.apex-ss-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; grid-gap: 22px; }
+.apex-ss-g { min-width: 0; }
+.apex-ss-gl { color: var(--dim); font-size: 14px; }
+.apex-ss-gv { font-size: 46px; font-weight: 300; margin: 2px 0 8px; white-space: nowrap; }
+.apex-ss-gu { font-size: 16px; color: var(--dim); margin-left: 3px; }
+.apex-ss-gs { color: var(--dim); font-size: 12px; margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.apex-hot .apex-ss-gv, .apex-hot .apex-ss-gs { color: var(--warn); }
+.apex-hot .apex-ss-fill { background: var(--warn); }
+.apex-slide.apex-nofade { -webkit-transition: none; transition: none; }
+
+.apex-ss-track { height: 8px; border-radius: 4px; background: var(--panel2); overflow: hidden; }
+.apex-ss-fill { height: 100%; border-radius: 4px; background: var(--ac); }

@@ -6,8 +6,15 @@
 - 2026-11-01: Müzik sekmesinde canlı spektrum (32 çubuk, kapağın altında): EAMusic sayfası çalan sesi Web Audio `AnalyserNode` ile
   ölçüp `/api/remote/spectrum`'a 25/sn gönderir, eklenti `@stream("/applemusic/spektrum")` ile telefona aktarır. Ayrıntı
   `eklentiler/applemusic/NOTLAR.md` → "Spektrum".
+- 2026-11-01: APEX FINANCE eklentisi (`eklentiler/apex/`): Portföy sekmesi (değer, K/Z, bugün, değer/yatırılan grafiği, varlıklar,
+  dağılım), 120 sn boşta kalınca tam ekran slaytlar: portföy özeti + sistem durumu (dokununca kapanır), odak adasında portföy rozeti,
+  APEX kapalıysa "Aç".
+- 2026-11-01: Modlar Voicemeeter ayarı yüklüyor (Oyun+Masaüstü → masaüstü-oyun.xml, Müzik → müzik.xml, `core/voicemeeter.py`).
+  Giriş her modda Voicemeeter Out 6; çıkış Oyun/Masaüstü HyperX, Müzik Voicemeeter In 6. 8 aynı adlı VAIO çıkışı ayırt ediliyor.
 - 2026-11-01: Apple Music eklentisi (`eklentiler/applemusic/`): Müzik sekmesi (order 32) EAMusic istemcisini yerel köprü
   (`127.0.0.1:3000/api/remote`) üzerinden yönetir: oynat/duraklat, önceki/sonraki, karışık, tekrar, ses, çalma listesi seçme, "EAMusic'i aç".
+- 2026-10-31: Medya kapağı hiç görünmüyordu: `media.ps1` küçük resmi okuyamıyordu (AsStreamForRead aşırı yükleme hatası, sessizce
+  yutuluyordu). Yansıma ile çağrılıyor; Firefox'taki YouTube videosunun kapağı okundu.
 - 2026-10-31: Sade tema 3. adım: Ekran/Ses/Sistem/Tema aynı dilde. Aç/kapa düğmeleri anahtar oldu (`"on"`), Tema'da
   oyun efekti anahtarı (`theme.fx`), çoklu aktif kartlar sakin (`multi`), sistem kartında ayrıntı etiket satırında, büyük harfli metinler kalktı.
 - 2026-10-31: Sade tema 2. adım: Modlar = solda ana kart (`hero`: çalan şarkı / oyun / kritik pil, yoksa saat + tarih),

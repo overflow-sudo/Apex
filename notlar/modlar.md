@@ -48,3 +48,23 @@ Hiçbir mod uymuyorsa üst çubukta "Mod · Özel" yazar.
 - Ses anahtarı: `_clean(device)` (örn. "HyperX Cloud III S Wireless", "USB AUDIO CODEC"; "2- " ön eki atılır) o yönde tekse o,
   değilse `_clean(name)` ("Smart M70F"), o da değilse id. Görünen adlar `labels["out:<anahtar>"]` (çıkış "Hoparlör", giriş "Hat" ayrı).
 - Kur.bat: başlattıktan 6 sn sonra `bu_pc.json`'da "profiles" yoksa PC'de tarayıcıyla `http://localhost:8765` açar ve ne yapılacağını yazar.
+
+## Voicemeeter Potato (2026-11-01)
+- Emir ses yönlendirmesini Voicemeeter Potato ile yapıyor. Mod uygulanınca önce Voicemeeter ayarı yüklenir
+  (`config.PROFILES[..]["voicemeeter"]`, `core/voicemeeter.load`), sonra ekranlar ve Windows varsayılan aygıtları.
+  - Oyun + Masaüstü → `masaüstü-oyun.xml`: giriş şeridi 1 = M-Audio Line 1/2, A1 = "Kulaklıklar", A2 = HyperX.
+  - Müzik → `müzik.xml`: A1 = "M-Audio M-Track Solo and Duo ASIO", donanım girişi yok. Gerisi aynı.
+  - XML'leri Emir Voicemeeter'da Menu > Save Settings ile kaydedip proje köküne koydu; değiştirmek için üzerine kaydetmek yeterli.
+- Windows aygıtları: giriş her modda **Voicemeeter Out 6** (= B1 veri yolu; şerit 1 busb=1). Çıkış Oyun/Masaüstü **HyperX**
+  (Windows sesi doğrudan kulaklığa), Müzik **Voicemeeter In 6** (= ilk sanal giriş, şerit 6: A1 + B1). Oyun modu eskiden
+  TV'nin HDMI sesine çıkıyordu, Emir'in isteğiyle HyperX oldu.
+- Bu değerler hem `config.py`'de hem çalışan kopyadaki `yerel/bu_pc.json`'da (sihirbaz seçimleri config'in üstüne yazar;
+  2026-11-01'de elle güncellendi). Sihirbaz yeniden çalıştırılırsa oradaki seçimler geçerli olur.
+- Remote API: `VoicemeeterRemote64.dll` (yolu kayıt defterindeki kaldırma anahtarından), `VBVMR_Login` (1 = Voicemeeter kapalı →
+  `VBVMR_RunVoicemeeter(3)` ile açılır), `VBVMR_SetParameterStringW("Command.Load", yol)`, kısa bekleme, `VBVMR_Logout`.
+  Okuma testi: `VBVMR_GetParameterStringW("Bus[0].device.name")`. Müzik XML'i yüklenince A1 ASIO oluyor, geri dönünce eski hali (doğrulandı).
+- **8 aynı adlı çıkış:** Potato'nun sanal girişleri Windows'ta 8 kez "Hoparlör (VB-Audio Voicemeeter VAIO)" olarak görünür ve
+  SoundVolumeView komut satırı kimlikleri de aynıdır (eskiden hep ilki seçilirdi). `core/audio.list_devices` kayıt defterinden
+  (`MMDevices\Audio\Render\{guid}\Properties`, `{233164c8-...},1`) pin adını okur: `vbvoicemeetervaio2023_outN_wave` →
+  ad "Voicemeeter In N", kimlik Item ID (`{0.0.0.00000000}.{guid}`; SVV /SetDefault bunu kabul ediyor, denendi).
+  "outN = şerit N" eşlemesi adlardan çıkarıldı (Out N = veri yolu N); ses çalarken seviyeyle doğrulanmadı.

@@ -2,7 +2,7 @@
 Modlar config.PROFILES'ta, bu PC'nin aygıt seçimleri yerel/bu_pc.json'da (core/local.py, modules/wizard.py)."""
 import ctypes, threading, time
 import config
-from core import audio, display, local, state
+from core import audio, display, local, state, voicemeeter
 from core.system import match
 from core.registry import tab, action, status, on_start
 
@@ -72,6 +72,9 @@ def view():
 def apply(name):
     p = local.profiles()[name]
     with state.lock:
+        # önce Voicemeeter ayarı (motor yeniden başlar), sonra ekranlar ve Windows varsayılan aygıtları
+        if p.get("voicemeeter"):
+            voicemeeter.load(p["voicemeeter"])
         display.apply(p["monitors"], p.get("primary"))
         changed = p["monitors"] != "keep"
         if p.get("out"):

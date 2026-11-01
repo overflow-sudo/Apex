@@ -38,6 +38,7 @@ core/
   local.py           bu PC'ye özel ayarlar (yerel/bu_pc.json): profiles(), label(), get/put
   display.py         list_monitors(), find(), apply(keys, primary), only(), enable_all()
   audio.py           list_devices(dir), set_default(id), set_by_key(key, dir, wait), current(dir)
+  voicemeeter.py     load(xml): Voicemeeter Remote DLL ile ayar dosyası yükler (modların "voicemeeter" alanı)
   registry.py        @tab, @action, @status, @on_start, @on_stop, load_modules(), ui(), call()
   reloader.py        .py değişince kendini yeniden başlatır
   server.py          HTTP: GET / ve web dosyaları, GET /api/ui, POST /api/action
@@ -66,6 +67,7 @@ kurulum/kur.ps1      Python kontrolü, C:\PC_Kumanda'ya robocopy, Users izni, za
 yerel/bu_pc.json     SADECE çalışan kopyada: bu PC'nin mod aygıt seçimleri + DISPLAYn -> ekran adı (core/local.py)
 aygit_listesi.bat    aygıt CSV dökümü
 pc_kumanda_eski.py   ilk tek dosyalık sürüm (yedek, kullanılmıyor)
+masaüstü-oyun.xml, müzik.xml  Voicemeeter Potato ayarları (Oyun+Masaüstü / Müzik modları yükler, notlar/modlar.md)
 ```
 
 ## Yeni özellik nasıl eklenir
@@ -121,6 +123,10 @@ Kart öğesine `"img": url` (ve `"img_white": true`) verilirse ikon yerine resim
 - Kur.bat kaynaktan kaldırılan eklenti klasörlerini ve `modules/*.py` dosyalarını çalışan kopyadan siler (iki kez yüklenmesin diye).
 - **Minecraft haritası** (`eklentiler/minecraft/`): ayrıntılar `eklentiler/minecraft/NOTLAR.md`. Kısaca: Fabric köprü modu
   konumu 10 Hz gönderir, cubiomes DLL karoları çizer, Harita sekmesi sadece oyun açıkken görünür.
+- **Apple Music** (`eklentiler/applemusic/`): Müzik sekmesi, Emir'in EAMusic istemcisini (`C:\Users\emir\Desktop\EAMusic`)
+  yerel köprüyle (`127.0.0.1:3000/api/remote`, SSE) yönetir. Ayrıntılar `eklentiler/applemusic/NOTLAR.md`.
+- **APEX FINANCE** (`eklentiler/apex/`): Portföy sekmesi (order 45), boşta tam ekran slaytlar (portföy özeti + sistem) ve odak rozeti. Emir'in
+  portföy uygulamasını (`C:\Users\emir\Desktop\EABorsa`, `127.0.0.1:8787`) okur. Ayrıntılar `eklentiler/apex/NOTLAR.md`.
 - Odak adası: `@focus(priority)` fn() → `{kind, title, sub, img, badge, live, alert, tab|panel}` ya da None (`notlar/arayuz.md`).
 - Yeni kancalar: `@stream(path)` fn(q, send) (SSE, `send(text)`), `@post(path)` (sadece 127.0.0.1, PIN yok), `@route(path)` artık `fn(q)` alır,
   `@tab(..., visible=fn)`, `games.detector`.

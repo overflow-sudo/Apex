@@ -14,7 +14,8 @@ LHM_URL = "http://127.0.0.1:8085/data.json"   # LibreHardwareMonitor web sunucus
 # Modlar (Modlar sekmesindeki büyük kartlar). Sıra = ekrandaki sıra.
 #   monitors : "all" = hepsini aç | "keep" = ekranlara dokunma | ["ad", ...] = sadece bunlar açık
 #   primary  : ana ekran olacak monitör (None = değiştirme)
-#   out / inp: varsayılan ses çıkışı / girişi (None = değiştirme)
+#   out / inp: varsayılan ses çıkışı / girişi (None = değiştirme). Voicemeeter'ın 8 sanal girişi "Voicemeeter In 1".."8"
+#   voicemeeter: mod uygulanınca Voicemeeter'a yüklenecek ayar dosyası (proje klasörüne göre; None = dokunma)
 #   icon     : web/app.js içindeki ICONS anahtarlarından biri
 PROFILES = {
     "tv": {
@@ -23,8 +24,9 @@ PROFILES = {
         "icon": "gamepad",
         "monitors": ["Smart M70F"],
         "primary": "Smart M70F",
-        "out": "Smart M70F",
-        "inp": None,
+        "out": "HyperX",
+        "inp": "Voicemeeter Out 6",
+        "voicemeeter": "masaüstü-oyun.xml",
     },
     "desk": {
         "title": "Masaüstü",
@@ -33,7 +35,8 @@ PROFILES = {
         "monitors": "all",
         "primary": "EI242QR",
         "out": "HyperX",
-        "inp": "HyperX",
+        "inp": "Voicemeeter Out 6",
+        "voicemeeter": "masaüstü-oyun.xml",
     },
     "music": {
         "title": "Müzik",
@@ -41,8 +44,9 @@ PROFILES = {
         "icon": "music",
         "monitors": "keep",
         "primary": None,
-        "out": "USB AUDIO",
-        "inp": "USB AUDIO",
+        "out": "Voicemeeter In 6",      # Voicemeeter'ın ilk sanal girişi (şerit 6: A1 + B1)
+        "inp": "Voicemeeter Out 6",     # B1
+        "voicemeeter": "müzik.xml",
     },
 }
 

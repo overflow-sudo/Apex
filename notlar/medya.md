@@ -17,6 +17,9 @@
   medya paneli açılır: büyük kapak, segmentli ilerleme çubuğu (saniyede bir yerelde ilerler), önceki /
   oynat-durdur / sonraki. Medya ve skor birlikte görünürken durum etiketleri gizlenir. 760 px'ten dar ekranda
   kutuda sadece kapak kalır.
-- ⚠ PowerShell/WinRT kısmı Windows'ta test edilmedi (Linux'ta sahte veriyle sadece arayüz test edildi).
-  Çalışmazsa log'da "medya okunamadı" ya da "medya süreci durdu" satırına bak.
+- Windows'ta doğrulandı (2026-10-31, Firefox'ta YouTube). Çalışmazsa log'da "medya okunamadı" ya da "medya süreci durdu" satırına bak.
+- **Kapak tuzağı:** PowerShell WinRT akışını `[System.IO.WindowsRuntimeStreamExtensions]::AsStreamForRead($ras)` ile
+  bağlayamıyor ("Cannot find an overload"). Hata `catch {}` ile yutulduğu için 2026-10-31'e kadar hiçbir uygulamada kapak
+  çıkmadı. Çözüm: metodu yansıma ile çağırmak (`GetMethod('AsStreamForRead', [IInputStream]).Invoke`). Tarayıcı
+  videolarında kapak 16:9 küçük resim; arayüzde kare kutuya `object-fit: cover` ile kırpılır.
 - CSS tuzağı: `.main` ana içerik alanının sınıfı. Başka bir öğeye `main` sınıfı verme (oynat düğmesi uzamıştı).

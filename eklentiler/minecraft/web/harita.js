@@ -14,9 +14,48 @@
   var BPP = [256, 128, 64, 32, 16, 8, 4, 2, 1, 0.5];
   var SVGNS = "http://www.w3.org/2000/svg";
 
+  // ---- yapı ve rota ikonları: 24x24 dolu siluetler (fill-rule evenodd: iç boşluklar delik olur) ----
+  var MCI = {
+    village: "M5 2h14v14h-4.5v6h-5v-6H5zM7.5 7h3v2.5h-3zm6 0h3v2.5h-3z",                       // köylü başı + burun
+    outpost: "M7 22V9H5V3h3v2h2V3h4v2h2V3h3v6h-2v13zM10.5 12h3v4h-3z",                          // gözetleme kulesi
+    mansion: "M1 11L12 2l11 9h-3v11h-6v-6h-4v6H4V11z",                                          // konak
+    monument: "M12 5a7 7 0 1 0 0 14a7 7 0 1 0 0-14zM12 9a3 3 0 1 0 0 6a3 3 0 1 0 0-6zM11 0h2v4h-2zM11 20h2v4h-2zM0 11h4v2H0zM20 11h4v2h-4z", // muhafız gözü
+    ancient: "M4 11a8 8 0 0 1 16 0v5l-2 2v4H6v-4l-2-2zM7 10h4v4H7zm6 0h4v4h-4zM10 18h1.5v3H10zm2.5 0H14v3h-1.5z", // kafatası
+    stronghold: "M1 12C5 4.5 19 4.5 23 12C19 19.5 5 19.5 1 12zM12 7.5a4.5 4.5 0 1 0 0 9a4.5 4.5 0 1 0 0-9zM11 8.5h2v7h-2z", // ender gözü
+    spawn: "M2 19V7h2.5v6H11V9h8.5a2.5 2.5 0 0 1 2.5 2.5V19h-2.5v-2.5h-15V19zM5 9.5h4.5V12H5z",    // yatak
+    desert: "M12 2L1 22h22zM10.5 16h3v6h-3z",                                                   // piramit
+    jungle: "M7 3h10v4h2v4h2v4h2v7H1v-7h2v-4h2V7h2zM10.5 16h3v6h-3z",                           // basamaklı tapınak
+    hut: "M1 18h22v3H1zM6.5 18L10 6.5 18 3l-3.5 4.5L17.5 18z",                                   // cadı şapkası
+    igloo: "M1 20a11 11 0 0 1 22 0zM9 20a3 3 0 0 1 6 0z",                                       // iglo
+    portal: "M4 2h16v20H4zM7.5 5.5h9v13h-9z",                                                   // portal çerçevesi
+    shipwreck: "M1 14h22l-3.5 7h-15zM11 2h2v11h-2zM13 3.5l6.5 8H13z",                           // gemi
+    oceanruin: "M3 21V9h3.5v12zM10.25 21V4h3.5v17zM17.5 21v-7.5H21V21zM1 21h22v2.5H1z",         // yıkık sütunlar
+    trial: "M2 2h20v20H2zM5 5h5.5v5.5H5zm8.5 0H19v5.5h-5.5zM5 13.5h5.5V19H5zm8.5 0H19V19h-5.5z", // canavar kafesi
+    trail: "M8 2h8v3l-1.5 1.5L19 11v7l-3.5 4.5h-7L5 18v-7l4.5-4.5L8 5zM9 13h6v3H9z",             // süslü çömlek
+    well: "M3 11h18v11H3zM6 14h12v5H6zM4 3h16v3H4zM5.5 6H8v5H5.5zm10.5 0h2.5v5H16z",            // kuyu
+    treasure: "M2 9.5A5.5 5.5 0 0 1 7.5 4h9A5.5 5.5 0 0 1 22 9.5V11H2zM2 12h20v9H2zM10.5 12h3v4.5h-3z", // sandık
+    fortress: "M2 22V7h3.5v3H8V7h3.5v3H14V7h3.5v3H20V7h2v15zM9.5 22v-5a2.5 2.5 0 0 1 5 0v5z",    // nether kalesi
+    bastion: "M2 5h20v14H2zM6.5 9.5h4v5h-4zm7 0h4v5h-4z",                                       // piglin burnu
+    endcity: "M8 22V10H4.5V6H8V2h8v4h3.5v4H16v12zM10.5 13h3v4h-3z",                             // end kulesi
+    "r-air": "M1.5 11.5L22.5 2 16 22l-4.5-7.5z",                                                // kağıt uçak
+    "r-boat": "M1 14h22l-3.5 7h-15zM11 2h2v11h-2zM13 3.5l6.5 8H13z",                            // tekne
+    "r-horse": "M5 22l1.5-7.5-2.5-1L6 7l4.5-5 2 1.5L17 2l1.5 3.5-2 1.5 4.5 7-2.5 1.5-3.5-4-2.5 2.5 1 8z" // at
+  };
+
+  function mcSvg(d) { return '<svg viewBox="0 0 24 24" fill="currentColor" fill-rule="evenodd"><path d="' + d + '"/></svg>'; }
+
+  // renkli zemin üstünde okunur ikon rengi
+  function mcInk(hex) {
+    var n = parseInt(String(hex || "#fff").replace("#", ""), 16);
+    var l = 0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255);
+    return l > 140 ? "#111" : "#fff";
+  }
+
+  function mcFmt(n) { return Math.round(n).toLocaleString("tr-TR"); }
+
   function mcCreate() {
     var m = { bpp: 4, cx: 0, cz: 0, follow: true, tiles: {}, marks: {}, cells: {}, showStructs: true, data: {}, pin: null,
-      wpEls: {}, hide: {} };
+      wpEls: {}, hide: {}, mode: store.get("mcRouteMode") || "air", rt: null };
     try { m.hide = JSON.parse(store.get("mcHide") || "{}") || {}; } catch (e) { m.hide = {}; }
     if (store.get("mcStructs") === "0") m.showStructs = false;
     var root = el("div", "mcmap");
@@ -26,6 +65,31 @@
     m.svg.setAttribute("class", "mcroute");
     m.line = document.createElementNS(SVGNS, "line");
     m.svg.appendChild(m.line);
+    m.pathB = document.createElementNS(SVGNS, "path");          // koyu kontur: yeşil arazide de görünsün
+    m.pathB.setAttribute("class", "mcrb");
+    m.svg.appendChild(m.pathB);
+    m.pathW = document.createElementNS(SVGNS, "path");          // rota: suyolu / yürünecek kısım
+    m.pathW.setAttribute("class", "mcrw");
+    m.pathL = document.createElementNS(SVGNS, "path");          // tekne için kara (taşıma), at için yüzme
+    m.pathL.setAttribute("class", "mcrl");
+    m.svg.appendChild(m.pathW);
+    m.svg.appendChild(m.pathL);
+    m.modes = el("div", "mcmodes");                               // rota türü: kuş uçuşu / tekne / at
+    m.modeBtns = {};
+    [["air", "Kuş uçuşu"], ["boat", "Tekne"], ["horse", "At"]].forEach(function (o) {
+      var b = el("button", "mcmb");
+      b.innerHTML = mcSvg(MCI["r-" + o[0]]);
+      b.appendChild(el("span", "", o[1]));
+      b.onclick = function (e) {
+        e.stopPropagation();
+        m.mode = o[0];
+        store.set("mcRouteMode", o[0]);
+        m.rt = null;
+        mcDraw();
+      };
+      m.modes.appendChild(b);
+      m.modeBtns[o[0]] = b;
+    });
     m.flag = el("div", "mcflag");
     m.flag.innerHTML = icon("flag");
     m.pinEl = el("div", "mcpin");
@@ -53,7 +117,7 @@
     m.structBtn = btn("layers", function () { mcPanel(m.layersP, mcLayers); }, "Katmanlar");
     m.wpBtn = btn("star", function () { mcPanel(m.wpP, mcWpPanel); }, "Kayıtlı yerler");
     m.searchBtn = btn("search", function () { mcPanel(m.form); }, "Koordinat ara");
-    [m.layer, m.mlayer, m.wpLayer, m.svg, m.pinEl, m.flag, m.player, m.hud, m.info, m.tip, m.form, m.layersP, m.wpP, ctl]
+    [m.layer, m.mlayer, m.wpLayer, m.svg, m.pinEl, m.flag, m.player, m.hud, m.info, m.tip, m.form, m.layersP, m.wpP, m.modes, ctl]
       .forEach(function (e) { root.appendChild(e); });
     m.root = root;
     mcGestures(m);
@@ -174,6 +238,11 @@
       if (badge) {
         var bd = el("span", "mcbadge", badge[0]);
         bd.style.background = badge[1];
+        if (MCI[badge[2]]) {
+          bd.innerHTML = mcSvg(MCI[badge[2]]);
+          bd.className = "mcbadge ic";
+          bd.style.color = mcInk(badge[1]);
+        }
         r.appendChild(bd);
       }
       r.appendChild(el("span", "mcln", label));
@@ -193,7 +262,7 @@
       row(t[2], !m.hide[t[0]], function () {
         if (m.hide[t[0]]) delete m.hide[t[0]]; else m.hide[t[0]] = 1;
         store.set("mcHide", JSON.stringify(m.hide));
-      }, [t[1], t[3]]);
+      }, [t[1], t[3], t[0]]);
     });
     p = keep;
     p.appendChild(el("div", "mcnote", "Küçük yapılar (portal, gemi, hazine…) yakınlaşınca görünür."));
@@ -356,7 +425,7 @@
 
   function mcInUi(t) {
     while (t && t !== MC.root) {
-      if (/\b(mcctl|mcform|mctip|mcmk|mchud|mcwp)\b/.test(t.className || "")) return true;
+      if (/\b(mcctl|mcform|mctip|mcmk|mchud|mcwp|mcmodes)\b/.test(t.className || "")) return true;
       t = t.parentNode;
     }
     return false;
@@ -531,8 +600,13 @@
     } else {
       m.player.style.display = "none";
     }
-    // ---- hedef + kuş uçuşu rota ----
+    // ---- hedef + rota (kuş uçuşu / tekne / at) ----
     var tg = mcTargetHere(d.target, d.dim || 0), route = null;
+    m.modes.style.display = tg ? "" : "none";
+    for (var mb in m.modeBtns) m.modeBtns[mb].className = "mcmb" + (mb === m.mode ? " on" : "");
+    m.pathW.setAttribute("d", "");
+    m.pathL.setAttribute("d", "");
+    m.pathB.setAttribute("d", "");
     if (tg) {
       var tx = (tg.x - m.cx) / bpp + W / 2, tzs = (tg.z - m.cz) / bpp + H / 2;
       m.flag.style.display = "";
@@ -542,14 +616,38 @@
         m.svg.style.display = "";
         m.svg.setAttribute("width", W);
         m.svg.setAttribute("height", H);
-        m.line.setAttribute("x1", px); m.line.setAttribute("y1", pz);
-        m.line.setAttribute("x2", tx); m.line.setAttribute("y2", tzs);
-        var dx = tg.x - d.x, dz = tg.z - d.z;
-        var dist = Math.sqrt(dx * dx + dz * dz);
-        // hedefin yaw cinsinden yönü; pozitif fark = sağa dön (yaw saat yönünde artar)
-        var want = Math.atan2(-dx, dz) * 180 / Math.PI;
-        var rel = ((want - (d.yaw || 0)) % 360 + 540) % 360 - 180;
-        route = { dist: dist, rel: rel };
+        var rt = mcRouteFor(d, tg), aim = tg, note = "";
+        var dist = Math.sqrt(Math.pow(tg.x - d.x, 2) + Math.pow(tg.z - d.z, 2));
+        if (rt && rt.data && !rt.data.error) {
+          var al = mcAlong(rt.data.pts, d.x, d.z);
+          var chain = [[d.x, d.z], al.proj].concat(rt.data.pts.slice(al.seg + 1));
+          var cats = [rt.data.segs[al.seg], rt.data.segs[al.seg]].concat(rt.data.segs.slice(al.seg + 1));
+          var bad = m.mode === "boat" ? "kara" : "su", dw = "", dl = "";
+          for (var ci = 0; ci < chain.length - 1; ci++) {
+            var sg = "M" + ((chain[ci][0] - m.cx) / bpp + W / 2).toFixed(1) + " " + ((chain[ci][1] - m.cz) / bpp + H / 2).toFixed(1) +
+              "L" + ((chain[ci + 1][0] - m.cx) / bpp + W / 2).toFixed(1) + " " + ((chain[ci + 1][1] - m.cz) / bpp + H / 2).toFixed(1);
+            if (cats[ci] === bad) dl += sg; else dw += sg;
+          }
+          m.pathW.setAttribute("d", dw);
+          m.pathL.setAttribute("d", dl);
+          m.pathB.setAttribute("d", dw + dl);
+          m.line.style.display = "none";
+          aim = { x: al.ahead[0], z: al.ahead[1] };
+          dist = al.remain;
+          if (rt.data.land > 0) note = (m.mode === "boat" ? "karada " : "yüzerek ") + mcFmt(rt.data.land) + " blok";
+          if (rt.pending) note = (note ? note + " · " : "") + "yenileniyor…";
+        } else {
+          m.line.style.display = "";
+          m.line.setAttribute("x1", px); m.line.setAttribute("y1", pz);
+          m.line.setAttribute("x2", tx); m.line.setAttribute("y2", tzs);
+          if (rt && rt.pending) note = "rota hesaplanıyor…";
+          else if (rt && rt.data && rt.data.error) note = "rota yok: " + rt.data.error;
+          else if (m.mode !== "air" && (d.dim || 0) !== 0) note = "tekne/at rotası sadece Overworld'de";
+        }
+        // hedefin (rotada: ~32 blok ilerideki noktanın) yaw cinsinden yönü; pozitif fark = sağa dön
+        var wantDeg = Math.atan2(-(aim.x - d.x), aim.z - d.z) * 180 / Math.PI;
+        var relDeg = ((wantDeg - (d.yaw || 0)) % 360 + 540) % 360 - 180;
+        route = { dist: dist, rel: relDeg, note: note };
       } else m.svg.style.display = "none";
     } else {
       m.flag.style.display = "none";
@@ -574,7 +672,7 @@
         var dir = Math.abs(route.rel) < 8 ? "tam önünde" : Math.abs(route.rel) > 172 ? "tam arkanda"
           : (route.rel > 0 ? "sağa " : "sola ") + Math.round(Math.abs(route.rel)) + "°";
         r.appendChild(el("b", "", "HEDEF"));
-        r.appendChild(document.createTextNode(" " + Math.round(route.dist).toLocaleString("tr-TR") + " blok · " + dir));
+        r.appendChild(document.createTextNode(" " + mcFmt(route.dist) + " blok · " + dir + (route.note ? " · " + route.note : "")));
         var xb = el("button", "mcx", "×");
         xb.onclick = function (e) { e.stopPropagation(); mcSetTarget(null); };
         r.appendChild(xb);
@@ -587,6 +685,52 @@
     m.info.textContent = !d.ok ? "Harita kütüphanesi yüklenemedi: " + (d.err || "?")
       : d.seed ? w + "seed " + d.seed + (d.seedSrc === "varsayılan" ? " (varsayılan)" : "") + " · 1 px = " + bpp + " blok"
       : "Seed bilinmiyor";
+  }
+
+  // ---- tekne / at rotası (sunucuda A*, rota.py) ----
+  // Aynı hedef + tür için bir kez istenir; oyuncu rotadan uzaklaşırsa (en fazla 5 sn'de bir) yeniden hesaplanır.
+  function mcRouteFor(d, tg) {
+    var m = MC;
+    if (m.mode === "air" || (d.dim || 0) !== 0 || !d.seed) return null;
+    var key = m.mode + ":" + d.seed + ":" + Math.round(tg.x) + ":" + Math.round(tg.z), rt = m.rt, now = Date.now();
+    if (rt && rt.key === key) {
+      if (rt.pending || !rt.data || rt.data.error || now - rt.at < 5000) return rt;
+      if (mcAlong(rt.data.pts, d.x, d.z).dist < Math.max(48, rt.data.scale * 4)) return rt;
+    }
+    var nr = { key: key, pending: true, at: now, data: rt && rt.key === key ? rt.data : null };
+    m.rt = nr;
+    fetch("/mc/route?s=" + d.seed + "&m=" + m.mode + "&x0=" + Math.round(d.x) + "&z0=" + Math.round(d.z) +
+          "&x1=" + Math.round(tg.x) + "&z1=" + Math.round(tg.z))
+      .then(function (r) { return r.json(); })
+      .then(function (j) { nr.data = j; })
+      .catch(function () { nr.data = { error: "bağlantı" }; })
+      .then(function () { nr.pending = false; nr.at = Date.now(); if (MC && MC.rt === nr) mcDraw(); });
+    return nr;
+  }
+
+  // oyuncunun rotadaki yeri: en yakın parça, izdüşüm, kalan uzunluk, ~32 blok ilerideki nokta (köşede yön erken dönsün)
+  function mcAlong(pts, x, z) {
+    var best = { dist: Infinity, seg: 0, proj: pts[0] };
+    for (var i = 0; i < pts.length - 1; i++) {
+      var ax = pts[i][0], az = pts[i][1], vx = pts[i + 1][0] - ax, vz = pts[i + 1][1] - az, L2 = vx * vx + vz * vz;
+      var t = L2 ? Math.max(0, Math.min(1, ((x - ax) * vx + (z - az) * vz) / L2)) : 0;
+      var qx = ax + vx * t, qz = az + vz * t, dd = Math.sqrt((x - qx) * (x - qx) + (z - qz) * (z - qz));
+      if (dd < best.dist) best = { dist: dd, seg: i, proj: [qx, qz] };
+    }
+    var remain = 0, look = 32, ahead = null, cur = best.proj;
+    for (var j = best.seg; j < pts.length - 1; j++) {
+      var nx = pts[j + 1][0], nz = pts[j + 1][1];
+      var sl = Math.sqrt((nx - cur[0]) * (nx - cur[0]) + (nz - cur[1]) * (nz - cur[1]));
+      if (!ahead && remain + sl >= look) {
+        var f = (look - remain) / (sl || 1);
+        ahead = [cur[0] + (nx - cur[0]) * f, cur[1] + (nz - cur[1]) * f];
+      }
+      remain += sl;
+      cur = [nx, nz];
+    }
+    best.remain = remain + best.dist;
+    best.ahead = ahead || pts[pts.length - 1];
+    return best;
   }
 
   function mcLoadCell(seed, dim, cx, cz) {
@@ -604,6 +748,11 @@
     if (!e) {
       e = el("div", "mcmk", s[0]);
       e.style.background = s[4];
+      if (MCI[s[6]]) {                                          // harf yerine ikon (anahtar s[6])
+        e.innerHTML = mcSvg(MCI[s[6]]);
+        e.className = "mcmk ic";
+        e.style.color = mcInk(s[4]);
+      }
       e.onclick = function (ev) {
         ev.stopPropagation();
         var dist = m.data.x != null ? " · " + Math.round(Math.sqrt(Math.pow(s[1] - m.data.x, 2) + Math.pow(s[2] - m.data.z, 2))).toLocaleString("tr-TR") + " blok" : "";
