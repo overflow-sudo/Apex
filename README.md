@@ -55,7 +55,7 @@ Voicemeeter ayarı), o an ne olup bittiğini (çalan şarkı, açık oyun, kriti
 1. **İndir.** Depoyu klonla ya da "Code → Download ZIP" ile indirip bir klasöre çıkar (örn. `C:\Users\<sen>\Desktop\PC_Kumanda`).
 
    ```bash
-   git clone https://github.com/<kullanıcı>/PC_Kumanda.git
+   git clone https://github.com/overflow-sudo/Apex.git PC_Kumanda
    ```
 
 2. **`Kur.bat`'ı çalıştır** (çift tıkla, yönetici izni ister). Sırayla şunları yapar:
