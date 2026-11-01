@@ -1,4 +1,4 @@
-# PC Kumanda
+# Apex
 
 Windows bilgisayarını, masada duran eski bir Android telefondan yerel ağ üzerinden yöneten küçük bir web kumandası.
 Telefonun tarayıcısı `http://BILGISAYAR_IP:8765` adresini açar; uygulama kurmaya gerek yoktur.
@@ -9,6 +9,9 @@ Voicemeeter ayarı), o an ne olup bittiğini (çalan şarkı, açık oyun, kriti
 - **Sadece Python standart kütüphanesi.** `pip install` yok, derleme adımı yok, framework yok.
 - **Eski telefonlar için.** Arayüz düz HTML/CSS/JS; eski Android Chrome'da çalışır, yatay ~780×360 ekrana göre tasarlandı.
 - **Sade koyu tema.** Tesla ekranlarından esinlenen düz, kenarlıksız arayüz. Oyun açıkken vurgu rengi oyunun rengine döner.
+
+> Program bilgisayarda **PC Kumanda** adıyla kurulur ve çalışır: kurulum klasörü `C:\PC_Kumanda`, zamanlanmış görev "PC Kumanda",
+> güvenlik duvarı kuralı "PC Kumanda". Depodaki `apex` eklentisi ise ayrı bir şeydir (APEX FINANCE portföy ekranı).
 
 ## Özellikler
 
