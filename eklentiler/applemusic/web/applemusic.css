@@ -11,9 +11,6 @@
 .applemusic-off-ic .ic { width: 28px; height: 28px; }
 .applemusic-off-t { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
 .applemusic-off-s { font-size: 13px; color: var(--dim); max-width: 420px; margin-bottom: 14px; }
-.applemusic-open { padding: 10px 22px; border-radius: 999px; background: var(--ac); color: var(--on-ac);
-  font-size: 14px; font-weight: 600; }
-.applemusic-open:disabled { opacity: .5; }
 
 /* --- oynatıcı: solda kontrol, sağda listeler --- */
 .applemusic-on { flex: 1 1 auto; min-height: 0; display: flex; }
@@ -84,7 +81,7 @@
 .applemusic-empty { grid-column: 1 / -1; color: var(--dim); font-size: 13px; text-align: center; padding: 30px 0; }
 
 @media (hover: hover) and (pointer: fine) {
-  .applemusic-btn, .applemusic-cover, .applemusic-open, .applemusic-bar { cursor: pointer; }
+  .applemusic-btn, .applemusic-cover, .applemusic-bar { cursor: pointer; }
   .applemusic-btn:hover { background: var(--panel2); }
   .applemusic-play:hover { background: var(--ac); opacity: .9; }
 }

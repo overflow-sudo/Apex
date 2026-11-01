@@ -125,25 +125,10 @@
     var ic = el("div", "apex-off-ic");
     ic.appendChild(P.iconEl("apex"));
     box.appendChild(ic);
-    box.appendChild(el("div", "apex-off-t", d && d.kapali ? "APEX kapalı" : (d && d.hata) || "Portföy verisi yok"));
-    box.appendChild(el("div", "apex-off-s", d && d.kapali ? "Portföy uygulaması bu bilgisayarda çalışmıyor." : "Bir portföy oluşturun ya da tekrar deneyin."));
-    var row = el("div", "apex-off-btns");
-    if (d && d.kapali) row.appendChild(dugme("Aç", "apex.ac", "APEX BAŞLATILIYOR"));
-    row.appendChild(dugme("Yenile", "apex.yenile", ""));
-    box.appendChild(row);
+    // APEX kapanırsa kumanda kendiliğinden yeniden başlatır (eklenti.py _bekci), düğmeye gerek yok
+    box.appendChild(el("div", "apex-off-t", d && d.kapali ? "APEX başlatılıyor…" : (d && d.hata) || "Portföy verisi yok"));
+    box.appendChild(el("div", "apex-off-s", d && d.kapali ? "Portföy uygulaması birazdan kendiliğinden açılacak." : "APEX'te bir portföy oluşturun."));
     return box;
-  }
-
-  function dugme(baslik, eylem, mesaj) {
-    var b = el("button", "apex-btn", baslik);
-    b.onclick = function () {
-      if (mesaj) P.toast(mesaj, 2500);
-      P.api("/api/action", { name: eylem, params: {} }).then(function (r) {
-        if (r && r.ok === false) P.toast("HATA: " + (r.error || "APEX CEVAP VERMEDİ"), 3000);
-        setTimeout(function () { P.refresh(); }, eylem === "apex.ac" ? 6000 : 300);
-      });
-    };
-    return b;
   }
 
   // ---------- sekme widget'ı ----------

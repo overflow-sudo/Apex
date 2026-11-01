@@ -12,8 +12,10 @@ Emir'in portföy uygulamasını (APEX FINANCE, `C:\Users\emir\Desktop\EABorsa`, 
   Esc / PC klavyesiyle sekme değiştirme (`close` olayı) de kapatır. (2026-11-01: Emir'in isteğiyle portföyden sadece özet ekranı kaldı.)
 - **Odak rozeti** (`@focus` priority 20): ana kartın sağ üstünde küçük portföy rozeti (bugünkü %), dokununca Portföy sekmesi.
   30'un altında olduğu için arayüzü kendine odaklamaz.
-- **APEX kapalıysa**: sekmede "APEX kapalı" + "Aç" (konsolsuz `node server/index.ts`) ve "Yenile". `otomatik_ac` açıkken kumanda
-  açılışından `otomatik_bekle` sn sonra APEX çalışmıyorsa başlatılır. Bağlantı koparsa son iyi veri gösterilmeye devam eder.
+- **APEX hep açık (2026-11-01, Emir'in isteği):** `_bekci` (`otomatik_ac`) kumanda açılışından `otomatik_bekle` sn sonra başlar,
+  30 sn'de bir `/api/health`'e bakar, cevap yoksa konsolsuz `node server/index.ts` başlatır; üst üste çökerse bekleme 5 dk'ya kadar
+  uzar. Sekmede düğme yok, kapalıyken "APEX başlatılıyor…" yazar. Eskiden sadece açılışta bir kez deneniyordu; sonradan kapanan
+  APEX geri gelmiyordu. Bağlantı koparsa son iyi veri gösterilmeye devam eder (telefondaki rakamlar o sırada eski olabilir).
 
 ## Veri akışı
 - `@on_start` iş parçacığı `yenile` (60 sn) aralıkla APEX API'sini okur: `/api/portfolios` → her portföy için `/summary`;
@@ -38,7 +40,7 @@ Emir'in portföy uygulamasını (APEX FINANCE, `C:\Users\emir\Desktop\EABorsa`, 
 
 ## Doğrulanmayanlar
 - Gerçek eski Android telefonda (yalnızca masaüstü tarayıcıda 780×360 denendi). JS yeni sözdizimi kullanmıyor (`?.`, `??`, async yok).
-- "Aç" düğmesi ve `otomatik_ac` gerçek kurulumda (`C:\PC_Kumanda`, pythonw) denenmedi: `node` PATH'te yoksa
+- `_bekci` (otomatik başlatma) ayrı bir Python sürecinde denendi (2026-11-01, ~5 sn'de açıldı), ama gerçek kurulumda (`C:\PC_Kumanda`, pythonw) denenmedi: `node` PATH'te yoksa
   `C:\Program Files\nodejs\node.exe` aranır. APEX'in `dist/` klasörü derlenmiş olmalı (`npm.cmd run build`), API buna bağlı değil.
 
 ## Tuzaklar

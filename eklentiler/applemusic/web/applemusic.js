@@ -59,18 +59,10 @@
     ui.offIcon.appendChild(P.iconEl("applemusic"));
     ui.offTitle = P.el("div", "applemusic-off-t", "");
     ui.offSub = P.el("div", "applemusic-off-s", "");
-    ui.openBtn = P.el("button", "applemusic-open", "Aç");
-    ui.openBtn.onclick = function () {
-      ui.openBtn.disabled = true;
-      P.api("/api/action", { name: "applemusic.ac" }).then(function (r) {
-        P.toast(r && r.ok ? String(r.result || "AÇILIYOR") : "HATA: " + ((r && r.error) || ""), 2500);
-        setTimeout(function () { ui.openBtn.disabled = false; P.refresh(); }, 2500);
-      });
-    };
+    // EAMusic kapanırsa kumanda kendiliğinden yeniden açar (eklenti.py _bekci), düğmeye gerek yok
     ui.off.appendChild(ui.offIcon);
     ui.off.appendChild(ui.offTitle);
     ui.off.appendChild(ui.offSub);
-    ui.off.appendChild(ui.openBtn);
     root.appendChild(ui.off);
 
     // --- oynatıcı ---
@@ -210,20 +202,12 @@
     ui.on.style.display = ready ? "" : "none";
 
     if (!ready) {
-      if (!cur.server) {
-        ui.offTitle.textContent = "EAMusic kapalı";
-        ui.offSub.textContent = "PC'de Apple Music istemcisini açın.";
-        ui.openBtn.style.display = "";
-        ui.openBtn.textContent = "EAMusic'i aç";
-      } else if (!cur.connected) {
-        ui.offTitle.textContent = "Pencere açık değil";
-        ui.offSub.textContent = "EAMusic sunucusu çalışıyor ama pencere bağlı değil.";
-        ui.openBtn.style.display = "";
-        ui.openBtn.textContent = "Pencereyi aç";
+      if (!cur.connected) {
+        ui.offTitle.textContent = "EAMusic açılıyor…";
+        ui.offSub.textContent = "Apple Music istemcisi birazdan kendiliğinden açılacak.";
       } else {
         ui.offTitle.textContent = "Giriş yapılmadı";
         ui.offSub.textContent = "PC'deki EAMusic penceresinde “Apple Kimliği ile Bağlan” düğmesine basın.";
-        ui.openBtn.style.display = "none";
       }
       return;
     }

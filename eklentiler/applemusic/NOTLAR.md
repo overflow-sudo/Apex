@@ -15,7 +15,7 @@ EAMusic sayfası ─POST /api/remote/state (olay başına + 5 sn'de bir)─▶ s
   127.0.0.1**'den erişilebilir (403). Telefon EAMusic'e doğrudan bağlanmaz, her şey kumanda üzerinden geçer.
 - `view()` hızlıdır: `@on_start` iş parçacığı durumu yoklar (EAMusic açıkken 1,5 sn, kapalıyken 5 sn), `view()` son değeri okur.
 - `applemusic.komut` komutu gönderir, 0,35 sn bekler, durumu tazeler ve cevapta döndürür → telefon hemen güncellenir.
-- "Aç": sunucu kapalıysa `node scripts/app-mode.js` (EAMusic klasöründe; sunucu + Edge `--app` penceresi). Sunucu açık ama
+- Açma (`ac()`, `_bekci` çağırır; `applemusic.ac` eylemi de duruyor): sunucu kapalıysa `node scripts/app-mode.js` (EAMusic klasöründe; sunucu + Edge `--app` penceresi). Sunucu açık ama
   pencere yoksa doğrudan Edge `--app` penceresi (aynı profil: `%APPDATA%\EAMusic\browser-profile`).
 - Widget DOM'u bir kez kurulur; liste ancak çalma listesi kimlikleri değişince yeniden çizilir, kaydırma konumu korunur.
 - İlerleme telefonda yerelde akar. PC/telefon saatleri farklı olabileceği için mutlak zaman değil, durumun yaşı (`age`, ms) kullanılır.
@@ -67,12 +67,14 @@ eklenti.py tek yukarı akış iş parçacığı ◀─────────�
 `eklenti.py`'ye dokunmak **gerekmez**: komutu ve `snapshot()` alanlarını olduğu gibi taşır. Sonra: EAMusic'i yeniden başlat,
 Kur.bat'ı çalıştır. JS'te eski Android Chrome kuralları geçerli (`var`, `function`; `?.`, `=>`, `async` yok).
 
-## Windows ile başlatma
-Kumanda zaten oturum açılışında başladığı için EAMusic'i o başlatır (`otomatik_ac`, varsayılan açık): `@on_start` →
-`otomatik_bekle` (20 sn) sonra EAMusic bağlı değilse `ac()` (küçültülmüş). **Oturum başına bir kez:** oturum kimliği
-(explorer.exe başlama dakikası) `cache/applemusic/acilis.txt`'ye yazılır; kumanda gün içinde yeniden başlarsa (kod değişikliği,
-Kur.bat) kimlik aynı olduğu için tekrar açmaz → kullanıcının kapattığı EAMusic geri gelmez. Sistem çalışma süresi
-kullanılmıyor: Hızlı Başlangıç açıkken kapatmada sıfırlanmıyor. EAMusic klasörüne erişemeyen kullanıcıda otomatik açma yok.
+## Hep açık (2026-11-01)
+Emir'in isteği: EAMusic hep açık olsun, telefonda "Aç" düğmesi olmasın. `_bekci` iş parçacığı (`otomatik_ac`, varsayılan açık)
+kumanda açılışından `otomatik_bekle` (20 sn) sonra başlar, 30 sn'de bir bakar: sayfa köprüye bağlı değilse `ac()` (küçültülmüş;
+sunucu kapalıysa sunucu + pencere, sunucu açıksa sadece pencere). Açtıktan sonra 60 sn tekrar açmaz (yavaş açılışta çift pencere
+olmasın); üst üste açılamazsa bekleme 5 dk'ya kadar uzar. **Kullanıcının kapattığı pencere de 30 sn içinde geri gelir.**
+Eskiden "oturum başına bir kez" açılıyordu (`cache/applemusic/acilis.txt`, explorer.exe başlama dakikası); kaldırıldı.
+EAMusic klasörüne erişemeyen kullanıcıda (başka Windows hesabı) otomatik açma yok. Kapalıyken sekmede "EAMusic açılıyor…" yazar.
+Test (2026-11-01): kapalıyken bekçi ~10 sn'de sunucu + pencereyi açtı, sayfa bağlandı.
 
 ## Ayarlar (`settings("APPLEMUSIC", ...)`)
 `url` (varsayılan `http://127.0.0.1:3000`), `klasor` (EAMusic klasörü), `yenile` (yoklama sn), `kucuk_ac`, `otomatik_ac`,

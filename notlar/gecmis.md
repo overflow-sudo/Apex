@@ -3,6 +3,7 @@
 (CLAUDE.md'den taşındı, 2026-10-31. Genel kurallar CLAUDE.md'de.)
 
 ## Değişiklik geçmişi
+- 2026-11-01: APEX ve EAMusic hep açık: eklentilerde 30 sn'lik bekçi, kapanırsa yeniden başlatır; "Aç" düğmeleri kaldırıldı.
 - 2026-11-01: Müzik sekmesinde canlı spektrum (32 çubuk, kapağın altında): EAMusic sayfası çalan sesi Web Audio `AnalyserNode` ile
   ölçüp `/api/remote/spectrum`'a 25/sn gönderir, eklenti `@stream("/applemusic/spektrum")` ile telefona aktarır. Ayrıntı
   `eklentiler/applemusic/NOTLAR.md` → "Spektrum".

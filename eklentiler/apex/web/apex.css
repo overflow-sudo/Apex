@@ -55,9 +55,6 @@
 .apex-off-ic .ic { width: 28px; height: 28px; }
 .apex-off-t { font-size: 18px; margin-top: 10px; }
 .apex-off-s { color: var(--dim); font-size: 13px; margin-top: 4px; }
-.apex-off-btns { margin-top: 14px; }
-.apex-btn { background: var(--panel2); color: var(--fg); border: 0; border-radius: var(--r); padding: 10px 22px; font: inherit; font-size: 14px; margin: 0 5px; cursor: pointer; }
-.apex-btn:active { background: var(--ac); color: var(--on-ac); }
 
 /* ---------- boşta slayt gösterisi (tam ekran) ---------- */
 .apex-ss { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9000; background: var(--bg); color: var(--fg); display: flex; flex-direction: column; padding: 22px 34px 16px; box-sizing: border-box; cursor: pointer; }

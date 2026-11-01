@@ -20,10 +20,10 @@ from core.procs import IS_WIN
 
 AYAR = settings("APPLEMUSIC", {
     "url": "http://127.0.0.1:3000",                      # EAMusic sunucusu
-    "klasor": r"C:\Users\emir\Desktop\EAMusic",         # "Aç" düğmesi buradaki scripts/app-mode.js'i çalıştırır
+    "klasor": r"C:\Users\emir\Desktop\EAMusic",         # EAMusic kapalıysa buradaki scripts/app-mode.js çalıştırılır
     "yenile": 1.5,                                       # EAMusic açıkken durum yoklama aralığı (sn)
     "kucuk_ac": True,                                    # "Aç" ile açılan pencere görev çubuğuna küçültülsün
-    "otomatik_ac": True,                                 # Windows açılışında EAMusic'i (küçültülmüş) başlat
+    "otomatik_ac": True,                                 # EAMusic hep açık kalsın: kapanırsa 30 sn içinde (küçültülmüş) yeniden açılır
     "otomatik_bekle": 20,                                # açılışta masaüstü otursun diye bekleme (sn)
 })
 
@@ -93,71 +93,31 @@ def _dongu():
         time.sleep(AYAR["yenile"] if _durum["server"] else 5)
 
 
-def _acilis_kimligi():
-    """
-    Bu Windows oturumunun kimliği (dakika). Kabuk explorer.exe'nin başlama anı kullanılır: her oturum açılışında
-    değişir. Sistem çalışma süresi KULLANILMAZ, çünkü Windows "Hızlı Başlangıç" (varsayılan açık) kapatmada
-    çekirdeği hazırda beklettiği için çalışma süresi sıfırlanmaz → ertesi gün EAMusic açılmazdı.
-    Explorer okunamazsa sistem açılış anına düşülür.
-    """
-    import ctypes
-    from ctypes import wintypes
-    from core.procs import processes
-    k32 = ctypes.windll.kernel32
-    k32.OpenProcess.restype = ctypes.c_void_p
-    k32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
-    k32.GetProcessTimes.argtypes = [ctypes.c_void_p] + [ctypes.POINTER(wintypes.FILETIME)] * 4
-    k32.CloseHandle.argtypes = [ctypes.c_void_p]
+_son_acma = [0.0]
 
-    baslangiclar = []
-    for pid, ad in processes().items():
-        if ad.lower() != "explorer.exe":
-            continue
-        h = k32.OpenProcess(0x1000, False, pid)          # PROCESS_QUERY_LIMITED_INFORMATION
-        if not h:
-            continue
+
+def _bekci():
+    """
+    EAMusic hep açık kalsın (Emir'in isteği, 2026-11-01): 30 sn'de bir bakar, sayfa köprüye bağlı değilse açar
+    (sunucu kapalıysa sunucu + pencere, sunucu açıksa sadece pencere). Açtıktan sonra 60 sn bekler ki yavaş
+    açılışta ikinci pencere açılmasın. Üst üste açılamıyorsa bekleme 5 dk'ya kadar uzar.
+    """
+    time.sleep(AYAR["otomatik_bekle"])
+    hata = 0
+    while True:
         try:
-            c, x, kz, kl = wintypes.FILETIME(), wintypes.FILETIME(), wintypes.FILETIME(), wintypes.FILETIME()
-            if k32.GetProcessTimes(h, ctypes.byref(c), ctypes.byref(x), ctypes.byref(kz), ctypes.byref(kl)):
-                ft = (c.dwHighDateTime << 32) | c.dwLowDateTime     # 100 ns, 1601'den beri
-                baslangiclar.append(ft / 1e7 - 11644473600)        # → Unix zamanı
-        finally:
-            k32.CloseHandle(h)
-    if baslangiclar:
-        return int(min(baslangiclar) // 60)                         # kabuk = en eski explorer
-
-    k32.GetTickCount64.restype = ctypes.c_ulonglong
-    return int((time.time() - k32.GetTickCount64() / 1000.0) // 60)
-
-
-def _otomatik_ac():
-    """
-    Windows açılışında EAMusic'i bir kez açar. Kumanda gün içinde yeniden başladığında (kod değişikliği,
-    Kur.bat) tekrar açmaz: bu açılışta zaten açtıysa cache/applemusic/acilis.txt'de kimlik kayıtlıdır.
-    Böylece kullanıcının bilerek kapattığı EAMusic geri gelmez.
-    """
-    from core.plugin import data_dir
-    try:
-        kimlik = _acilis_kimligi()
-        dosya = os.path.join(data_dir("applemusic"), "acilis.txt")
-        try:
-            with open(dosya, encoding="utf-8") as f:
-                onceki = int(f.read().strip() or 0)
-        except (OSError, ValueError):
-            onceki = None
-        if onceki is not None and abs(onceki - kimlik) <= 1:      # saat kayması için ±1 dk tolerans
-            return
-        with open(dosya, "w", encoding="utf-8") as f:
-            f.write(str(kimlik))
-
-        time.sleep(AYAR["otomatik_bekle"])
-        _yokla()
-        if _durum["connected"]:
-            return
-        log("applemusic: Windows açılışı — EAMusic başlatılıyor")
-        ac()
-    except Exception as e:
-        log("applemusic: otomatik açma başarısız:", e)
+            _yokla()
+            if _durum["connected"]:
+                hata = 0
+            elif time.time() - _son_acma[0] > 60:
+                log("applemusic: EAMusic kapalı, açılıyor")
+                ac()
+                _son_acma[0] = time.time()
+                hata += 1
+        except Exception as e:
+            log("applemusic: otomatik açma başarısız:", e)
+            hata += 1
+        time.sleep(min(30 * 2 ** max(hata - 1, 0), 300))
 
 
 @on_start
@@ -165,7 +125,7 @@ def basla():
     threading.Thread(target=_dongu, daemon=True).start()
     # Klasöre erişilemiyorsa (başka Windows kullanıcısı) otomatik açma yapılmaz
     if IS_WIN and AYAR["otomatik_ac"] and os.path.isfile(os.path.join(AYAR["klasor"], "scripts", "app-mode.js")):
-        threading.Thread(target=_otomatik_ac, daemon=True).start()
+        threading.Thread(target=_bekci, daemon=True).start()
 
 
 # ---- Spektrum ----

@@ -27,8 +27,8 @@ from modules import system as sistem    # Sistem sekmesinin 2 sn'lik ölçümü 
 
 AYAR = settings("APEX", {
     "url": "http://127.0.0.1:8787",                     # APEX sunucusu
-    "klasor": r"C:\Users\emir\Desktop\EABorsa",         # "Aç" düğmesi burada node server/index.ts çalıştırır
-    "otomatik_ac": True,                                 # kumanda açılınca APEX kapalıysa arka planda başlat
+    "klasor": r"C:\Users\emir\Desktop\EABorsa",         # APEX kapalıysa burada node server/index.ts çalıştırılır
+    "otomatik_ac": True,                                 # APEX hep açık kalsın: kapanırsa 30 sn içinde arka planda yeniden başlatılır
     "otomatik_bekle": 25,                                # açılışta masaüstü otursun diye bekleme (sn)
     "yenile": 60,                                        # özet yenileme aralığı (sn)
     "gecmis_yenile": 900,                                # performans geçmişi yenileme aralığı (sn)
@@ -203,17 +203,28 @@ def _baslat():
     return "başlatıldı"
 
 
+def _bekci():
+    """APEX hep açık kalsın: 30 sn'de bir bakar, kapalıysa başlatır. Üst üste çöküyorsa bekleme 5 dk'ya kadar uzar."""
+    time.sleep(AYAR["otomatik_bekle"])
+    hata = 0                                  # son ayağa kalkıştan beri başarısız başlatma sayısı
+    while True:
+        try:
+            if _istek("/api/health", timeout=2)[0] == 200:
+                hata = 0
+            elif _baslat() == "başlatıldı":
+                hata += 1
+        except Exception as e:
+            log("apex: otomatik başlatma başarısız: %s" % e)
+            hata += 1
+        time.sleep(min(30 * 2 ** max(hata - 1, 0), 300))
+
+
 @on_start
 def basla():
     threading.Thread(target=_dongu, name="apex", daemon=True).start()
-    if AYAR["otomatik_ac"]:
-        def gecikmeli():
-            time.sleep(AYAR["otomatik_bekle"])
-            try:
-                _baslat()
-            except Exception as e:
-                log("apex: otomatik başlatma başarısız: %s" % e)
-        threading.Thread(target=gecikmeli, name="apex-ac", daemon=True).start()
+    # klasöre erişilemiyorsa (başka Windows kullanıcısı) başlatma denenmez
+    if AYAR["otomatik_ac"] and os.path.isfile(os.path.join(AYAR["klasor"], "server", "index.ts")):
+        threading.Thread(target=_bekci, name="apex-ac", daemon=True).start()
 
 
 def _anlik():
